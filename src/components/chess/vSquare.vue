@@ -8,7 +8,7 @@
       available: isAvailable,
     }"
     :style="{ translate: getPosition }"
-    :data-coordinates="getCoordinates(props.squareIndex)"
+    :data-square-index="props.squareIndex"
   />
 </template>
 
@@ -40,24 +40,39 @@ const props = defineProps({
 
 // html manipulation
 const squareElement = ref(null) as Ref<HTMLElement | null>;
-const isHovering = computed(
-  () => props.squareIndex === hoveringSquare.value && activeSquare.value === 0
-);
-const isActive = computed(() => props.squareIndex === activeSquare.value);
+const isHovering = computed(() => {
+  if (
+    props.squareIndex === hoveringSquare.value &&
+    (activeSquare.value === 0 || isAvailable.value)
+  ) {
+    return true;
+  }
+  return false;
+});
+const isActive = computed(() => {
+  const hoveringAvailableSquare = availableSquares.value.includes(
+    getCoordinates(hoveringSquare.value)
+  );
+  if (props.squareIndex === activeSquare.value && !hoveringAvailableSquare) {
+    return true;
+  }
+  return false;
+});
 const isAvailable = computed(() =>
   availableSquares.value.includes(getCoordinates(props.squareIndex))
 );
 
-// onMounted(() => {
-//   squareElement.value?.addEventListener(
-//     "mouseenter",
-//     () => (hovering.value = true)
-//   );
-//   squareElement.value?.addEventListener(
-//     "mouseleave",
-//     () => (hovering.value = false)
-//   );
-// });
+onMounted(() => {
+  squareElement.value?.addEventListener("mouseover", ({ clientX, clientY }) => {
+    if (isAvailable.value) {
+      hoveringSquare.value = props.squareIndex;
+    }
+  });
+  squareElement.value?.addEventListener(
+    "mouseleave",
+    () => (hoveringSquare.value = activeSquare.value)
+  );
+});
 
 // stores
 const { getCoordinates } = useSquareStore();
@@ -92,6 +107,7 @@ const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
   }
 
   &.available {
+    cursor: pointer;
     &::after {
       inset: 30%;
       opacity: 0.2;

@@ -38,23 +38,8 @@ const props = defineProps({
 const { getOwner } = usePieceStore();
 const boardStore = useBoardStore();
 const { hoveringSquare, activeSquare } = storeToRefs(boardStore);
-const { getRankBySquareIndex, getFileBySquareIndex } = useSquareStore();
 
 // element manipulation
-const chessPiece: Ref<HTMLElement | null> = ref(null);
-
-onMounted(() => {
-  chessPiece.value?.addEventListener("mouseenter", () => {
-    if (!activeSquare.value) {
-      hoveringSquare.value = props.squareIndex;
-    }
-  });
-  chessPiece.value?.addEventListener(
-    "mouseleave",
-    () => (hoveringSquare.value = activeSquare.value)
-  );
-});
-
 const pieceImage = computed(() => {
   const fileName = `${
     isWhite.value ? "w" : "b"
@@ -64,6 +49,19 @@ const pieceImage = computed(() => {
     `../../assets/img/chesspieces/${fileName}.svg`,
     import.meta.url
   ).href;
+});
+
+const chessPiece: Ref<HTMLElement | null> = ref(null);
+
+onMounted(() => {
+  chessPiece.value?.addEventListener("mouseover", () => {
+    if (!activeSquare.value) {
+      hoveringSquare.value = props.squareIndex;
+    }
+  });
+  chessPiece.value?.addEventListener("mouseleave", () => {
+    hoveringSquare.value = activeSquare.value;
+  });
 });
 
 // piece logic

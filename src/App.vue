@@ -13,7 +13,8 @@ import { useBoardStore } from "./stores/board";
 
 // stores
 const boardStore = useBoardStore();
-const { activeSquare, hoveringSquare } = storeToRefs(boardStore);
+const { activeSquare, hoveringSquare, availableSquares } =
+  storeToRefs(boardStore);
 
 onMounted(() => {
   window.addEventListener("mousedown", ({ clientX, clientY }) => {
@@ -23,9 +24,17 @@ onMounted(() => {
         element.parentElement?.dataset.squareIndex as string
       );
       hoveringSquare.value = 0;
+    } else if (element?.classList.contains("v-square")) {
+      if (activeSquare.value) {
+        activeSquare.value = 0;
+        hoveringSquare.value = 0;
+        availableSquares.value = [];
+      }
+      return;
     } else {
       activeSquare.value = 0;
       hoveringSquare.value = 0;
+      availableSquares.value = [];
     }
   });
 });

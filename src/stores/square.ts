@@ -46,6 +46,10 @@ export const useSquareStore = defineStore("square", () => {
   };
 
   const getCoordinates = (squareIndex: number) => {
+    if (squareIndex === 0) {
+      return squareIndex;
+    }
+
     return parseInt(
       `${getRankBySquareIndex(squareIndex)}${getFileBySquareIndex(squareIndex)}`
     );
