@@ -3,22 +3,23 @@
     ref="squareElement"
     class="v-square"
     :class="getColourClass()"
-    :style="{ translate: getPosition(props.file, props.rank) }"
-  >
-    {{ file }} - {{ rank }}
-    {{ getPieceState(id) }}
-  </div>
+    :style="{ translate: getPosition }"
+    :data-coordinates="getCoordinates(props.squareIndex)"
+  />
 </template>
 
 <script setup lang="ts">
+// imports
+import { useBoardStore } from "@/stores/board";
 import { useSquareStore } from "@/stores/square";
-import { ref, type PropType, type Ref } from "vue";
+import { ref, type PropType, type Ref, computed } from "vue";
 
-const squareElement = ref(null) as Ref<HTMLElement | null>;
-const { getPosition, getPieceState } = useSquareStore();
+// stores
+const boardStore = useBoardStore();
 
+// props
 const props = defineProps({
-  id: {
+  squareIndex: {
     type: Number,
     required: true,
   },
@@ -37,6 +38,18 @@ const props = defineProps({
   },
 });
 
+// html refs
+const squareElement = ref(null) as Ref<HTMLElement | null>;
+
+// stores
+const { getCoordinates } = useSquareStore();
+
+// square logic
+
+const getPosition = computed(() =>
+  boardStore.getPosition(props.file, props.rank)
+);
+
 const getColourClass = () => `v-square__colour--${props.colour}`;
 </script>
 
@@ -48,9 +61,9 @@ const getColourClass = () => `v-square__colour--${props.colour}`;
   overflow: hidden;
 }
 .v-square__colour--white {
-  background-color: wheat;
+  background-color: #ababab;
 }
 .v-square__colour--black {
-  background-color: brown;
+  background-color: #898989;
 }
 </style>

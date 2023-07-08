@@ -1,5 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useBoardStore } from "./board";
+import { computed } from "vue";
 
 export const useSquareStore = defineStore("square", () => {
   const boardStore = useBoardStore();
@@ -25,13 +26,13 @@ export const useSquareStore = defineStore("square", () => {
     throw Error("invalid colour");
   };
 
-  const getPosition = (fileIndex: number, rankIndex: number) => {
+  const getPosition = computed((fileIndex: number, rankIndex: number) => {
     // calculate the translate percentage
     const x = (fileIndex - 1) * 100;
     // since the board starts in lower left corner, count backwards
     const y = (8 - rankIndex) * 100;
     return `${x}% ${y}%`;
-  };
+  });
 
   const getFileBySquareIndex = (squareIndex: number): vSquareFileNumber => {
     const file: number | null =

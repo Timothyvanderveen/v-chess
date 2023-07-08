@@ -1,5 +1,4 @@
 /// <reference types="vite/client" />
-// vSquare
 
 type vSquareColour = "black" | "white";
 type vPlayerColour = "black" | "white";
@@ -19,12 +18,10 @@ type vPieceType =
   | "K"
   | "p"
   | "P";
+type vBoardState = Array<vSquareState>;
 
 interface vSquareState {
-  squareIndex: number;
+  coordinates: number;
   piece: vPieceType | null;
-}
-
-interface vBoardState {
-  [key: number]: vSquareState;
+  squareIndex: number;
 }
