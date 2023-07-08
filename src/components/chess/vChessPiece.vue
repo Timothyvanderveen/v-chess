@@ -3,6 +3,7 @@
     class="v-piece__wrapper"
     :style="{ translate: getPosition }"
     :data-square-index="props.squareIndex"
+    :class="{ active: props.squareIndex === activeSquare }"
   >
     <img
       v-if="pieceType"
@@ -55,12 +56,12 @@ const chessPiece: Ref<HTMLElement | null> = ref(null);
 
 onMounted(() => {
   chessPiece.value?.addEventListener("mouseover", () => {
-    if (!activeSquare.value) {
-      hoveringSquare.value = props.squareIndex;
-    }
+    // if (!activeSquare.value) {
+    hoveringSquare.value = props.squareIndex;
+    // }
   });
   chessPiece.value?.addEventListener("mouseleave", () => {
-    hoveringSquare.value = activeSquare.value;
+    hoveringSquare.value = 0;
   });
 });
 
@@ -110,15 +111,17 @@ const setAvailableSquares = () => {
   justify-content: center;
   transition: translate 0.2s ease-in-out;
 
+  &.active .v-piece {
+    scale: 1.2;
+  }
+
   .v-piece {
     width: 80%;
     user-select: none;
     cursor: pointer;
-
     transition: scale 0.2s ease-in-out;
 
-    &:hover,
-    &.active {
+    &:hover {
       scale: 1.2;
     }
   }

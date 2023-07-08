@@ -4,7 +4,7 @@
     class="v-square"
     :class="{
       [`v-square__colour--${props.colour}`]: true,
-      active: isHovering || isActive,
+      hovering: isHovering,
       available: isAvailable,
     }"
     :style="{ translate: getPosition }"
@@ -41,23 +41,20 @@ const props = defineProps({
 // html manipulation
 const squareElement = ref(null) as Ref<HTMLElement | null>;
 const isHovering = computed(() => {
-  if (
-    props.squareIndex === hoveringSquare.value &&
-    (activeSquare.value === 0 || isAvailable.value)
-  ) {
+  if (props.squareIndex === hoveringSquare.value) {
     return true;
   }
   return false;
 });
-const isActive = computed(() => {
-  const hoveringAvailableSquare = availableSquares.value.includes(
-    getCoordinates(hoveringSquare.value)
-  );
-  if (props.squareIndex === activeSquare.value && !hoveringAvailableSquare) {
-    return true;
-  }
-  return false;
-});
+// const isActive = computed(() => {
+//   const hoveringAvailableSquare = availableSquares.value.includes(
+//     getCoordinates(hoveringSquare.value)
+//   );
+//   if (props.squareIndex === activeSquare.value && !hoveringAvailableSquare) {
+//     return true;
+//   }
+//   return false;
+// });
 const isAvailable = computed(() =>
   availableSquares.value.includes(getCoordinates(props.squareIndex))
 );
@@ -70,7 +67,7 @@ onMounted(() => {
   });
   squareElement.value?.addEventListener(
     "mouseleave",
-    () => (hoveringSquare.value = activeSquare.value)
+    () => (hoveringSquare.value = 0)
   );
 });
 
@@ -91,7 +88,7 @@ const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
   border: 0.2vmin rgb(38, 38, 38, 0) solid;
   transition: border 0.2s ease-in-out;
 
-  &.active {
+  &.hovering {
     border: 0.2vmin rgb(38, 38, 38, 1) solid;
   }
 

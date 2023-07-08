@@ -23,14 +23,6 @@ onMounted(() => {
       activeSquare.value = parseInt(
         element.parentElement?.dataset.squareIndex as string
       );
-      hoveringSquare.value = 0;
-    } else if (element?.classList.contains("v-square")) {
-      if (activeSquare.value) {
-        activeSquare.value = 0;
-        hoveringSquare.value = 0;
-        availableSquares.value = [];
-      }
-      return;
     } else {
       activeSquare.value = 0;
       hoveringSquare.value = 0;
