@@ -1,6 +1,16 @@
 <template>
-  <div class="v-piece__wrapper" :style="{ translate: getPosition }">
-    <img v-if="pieceType" :src="pieceImage" class="v-piece" draggable="false" />
+  <div
+    class="v-piece__wrapper"
+    :style="{ translate: getPosition }"
+    :data-square-index="props.squareIndex"
+  >
+    <img
+      v-if="pieceType"
+      ref="chessPiece"
+      :src="pieceImage"
+      class="v-piece"
+      draggable="false"
+    />
   </div>
 </template>
 
@@ -8,34 +18,42 @@
 // imports
 import { useBoardStore } from "@/stores/board";
 import { usePieceStore } from "@/stores/piece";
-import { type PropType, computed } from "vue";
+import { useSquareStore } from "@/stores/square";
+import { storeToRefs } from "pinia";
+import { type PropType, computed, onMounted, ref, type Ref, watch } from "vue";
 
-// store
-const { getOwner } = usePieceStore();
-const boardStore = useBoardStore();
-
-// piece logic
-
-const getPosition = computed(() =>
-  boardStore.getPosition(props.file, props.rank)
-);
-
+// props
 const props = defineProps({
   pieceType: {
     type: String as PropType<vPieceType>,
     required: true,
   },
-  file: {
-    type: Number as PropType<vSquareFileNumber>,
-    required: true,
-  },
-  rank: {
-    type: Number as PropType<vSquareRankNumber>,
+  squareIndex: {
+    type: Number,
     required: true,
   },
 });
 
-const isWhite = computed(() => getOwner(props.pieceType) === "white");
+// store
+const { getOwner } = usePieceStore();
+const boardStore = useBoardStore();
+const { hoveringSquare, activeSquare } = storeToRefs(boardStore);
+const { getRankBySquareIndex, getFileBySquareIndex } = useSquareStore();
+
+// element manipulation
+const chessPiece: Ref<HTMLElement | null> = ref(null);
+
+onMounted(() => {
+  chessPiece.value?.addEventListener("mouseenter", () => {
+    if (!activeSquare.value) {
+      hoveringSquare.value = props.squareIndex;
+    }
+  });
+  chessPiece.value?.addEventListener(
+    "mouseleave",
+    () => (hoveringSquare.value = activeSquare.value)
+  );
+});
 
 const pieceImage = computed(() => {
   const fileName = `${
@@ -47,6 +65,41 @@ const pieceImage = computed(() => {
     import.meta.url
   ).href;
 });
+
+// piece logic
+
+const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
+
+const isWhite = computed(() => getOwner(props.pieceType) === "white");
+
+const { getRankFileObject } = useSquareStore();
+const { availableSquares } = storeToRefs(useBoardStore());
+
+watch(
+  () => activeSquare.value,
+  (to) => {
+    if (to === props.squareIndex) {
+      setAvailableSquares();
+    }
+  }
+);
+
+const setAvailableSquares = () => {
+  availableSquares.value = [];
+  if (props.pieceType.toLowerCase() === "p") {
+    const { file, rank } = getRankFileObject(props.squareIndex);
+
+    availableSquares.value.push(
+      parseInt(`${rank}${file + (isWhite.value ? 1 : -1)}`)
+    );
+
+    if (file === 2 || file === 7) {
+      availableSquares.value.push(
+        parseInt(`${rank}${file + (isWhite.value ? 2 : -2)}`)
+      );
+    }
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -66,7 +119,8 @@ const pieceImage = computed(() => {
 
     transition: scale 0.2s ease-in-out;
 
-    &:hover {
+    &:hover,
+    &.active {
       scale: 1.2;
     }
   }

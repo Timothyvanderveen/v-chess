@@ -1,11 +1,6 @@
 <template>
-  <div class="v-chessboard">
-    <div
-      class="v-chessboard__squares"
-      @click="
-        boardStore.updateBoardState('3B3K/1r6/5N2/p3kP2/2pn2Q1/1P1n4/P2R1R1b/8')
-      "
-    >
+  <div ref="chessboard" class="v-chessboard">
+    <div class="v-chessboard__squares">
       <vSquare
         v-for="squareIndex in boardStore.squareArray"
         :key="squareIndex"
@@ -21,8 +16,7 @@
         v-for="(pieceState, id) in boardStore.boardState.filter((e) => e.piece)"
         :key="id"
         :piece-type="pieceState.piece!"
-        :file="getFileBySquareIndex(pieceState.squareIndex)"
-        :rank="getRankBySquareIndex(pieceState.squareIndex)"
+        :square-index="pieceState.squareIndex"
       />
     </div>
 
@@ -47,12 +41,15 @@ import vSquare from "./vSquare.vue";
 import vChessPiece from "./vChessPiece.vue";
 import { useSquareStore } from "@/stores/square";
 import { useBoardStore } from "@/stores/board";
-import { onMounted } from "vue";
+import { onMounted, ref, type Ref } from "vue";
 
 // stores
 const { getColour, getRankBySquareIndex, getFileBySquareIndex } =
   useSquareStore();
 const boardStore = useBoardStore();
+
+// html
+const chessboard: Ref<HTMLElement | null> = ref(null);
 
 onMounted(() => {
   boardStore.populateBoardState();

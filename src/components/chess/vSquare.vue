@@ -2,7 +2,11 @@
   <div
     ref="squareElement"
     class="v-square"
-    :class="getColourClass()"
+    :class="{
+      [`v-square__colour--${props.colour}`]: true,
+      active: isHovering || isActive,
+      available: isAvailable,
+    }"
     :style="{ translate: getPosition }"
     :data-coordinates="getCoordinates(props.squareIndex)"
   />
@@ -12,23 +16,19 @@
 // imports
 import { useBoardStore } from "@/stores/board";
 import { useSquareStore } from "@/stores/square";
-import { ref, type PropType, type Ref, computed } from "vue";
+import { storeToRefs } from "pinia";
+import { ref, type PropType, type Ref, computed, onMounted } from "vue";
 
 // stores
 const boardStore = useBoardStore();
+const { activeSquare, hoveringSquare, availableSquares } = storeToRefs(
+  useBoardStore()
+);
 
 // props
 const props = defineProps({
   squareIndex: {
     type: Number,
-    required: true,
-  },
-  file: {
-    type: Number as PropType<vSquareFileNumber>,
-    required: true,
-  },
-  rank: {
-    type: Number as PropType<vSquareRankNumber>,
     required: true,
   },
   colour: {
@@ -38,19 +38,33 @@ const props = defineProps({
   },
 });
 
-// html refs
+// html manipulation
 const squareElement = ref(null) as Ref<HTMLElement | null>;
+const isHovering = computed(
+  () => props.squareIndex === hoveringSquare.value && activeSquare.value === 0
+);
+const isActive = computed(() => props.squareIndex === activeSquare.value);
+const isAvailable = computed(() =>
+  availableSquares.value.includes(getCoordinates(props.squareIndex))
+);
+
+// onMounted(() => {
+//   squareElement.value?.addEventListener(
+//     "mouseenter",
+//     () => (hovering.value = true)
+//   );
+//   squareElement.value?.addEventListener(
+//     "mouseleave",
+//     () => (hovering.value = false)
+//   );
+// });
 
 // stores
 const { getCoordinates } = useSquareStore();
 
 // square logic
 
-const getPosition = computed(() =>
-  boardStore.getPosition(props.file, props.rank)
-);
-
-const getColourClass = () => `v-square__colour--${props.colour}`;
+const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
 </script>
 
 <style lang="scss" scoped>
@@ -59,6 +73,30 @@ const getColourClass = () => `v-square__colour--${props.colour}`;
   aspect-ratio: 1/1;
   position: absolute;
   overflow: hidden;
+  border: 0.2vmin rgb(38, 38, 38, 0) solid;
+  transition: border 0.2s ease-in-out;
+
+  &.active {
+    border: 0.2vmin rgb(38, 38, 38, 1) solid;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    background: #262626;
+    /* width: 100%; */
+    opacity: 0;
+    inset: 50%;
+    border-radius: 50%;
+    transition: inset 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  }
+
+  &.available {
+    &::after {
+      inset: 30%;
+      opacity: 0.2;
+    }
+  }
 }
 .v-square__colour--white {
   background-color: #ababab;

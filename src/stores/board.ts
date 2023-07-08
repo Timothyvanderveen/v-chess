@@ -1,11 +1,12 @@
 import { defineStore } from "pinia";
 import { useFenStore } from "./fen";
-import { computed, reactive, ref, type Ref } from "vue";
-import { usePieceStore } from "./piece";
+import { useSquareStore } from "./square";
+import { type Ref, ref } from "vue";
 
 export const useBoardStore = defineStore("board", () => {
   // stores
   const { parseFenToBoardState } = useFenStore();
+  const squareStore = useSquareStore();
 
   // constants
   const squareArray = Array.from(Array(64).keys()).map((e) => ++e);
@@ -15,6 +16,9 @@ export const useBoardStore = defineStore("board", () => {
 
   // board state
   const boardState: Ref<vBoardState> = ref([]);
+  const availableSquares: Ref<Array<number>> = ref([]);
+  const hoveringSquare = ref(0);
+  const activeSquare = ref(0);
 
   const populateBoardState = (fen: string | null = null) => {
     boardState.value = parseFenToBoardState(fen);
@@ -27,11 +31,11 @@ export const useBoardStore = defineStore("board", () => {
     });
   };
 
-  const getPosition = (file: number, rank: number) => {
+  const getPosition = (squareIndex: number) => {
     // calculate the translate percentage
-    const x = (file - 1) * 100;
+    const x = (squareStore.getRankBySquareIndex(squareIndex) - 1) * 100;
     // since the board starts in lower left corner, count backwards
-    const y = (8 - rank) * 100;
+    const y = (8 - squareStore.getFileBySquareIndex(squareIndex)) * 100;
     return `${x}% ${y}%`;
   };
 
@@ -44,5 +48,8 @@ export const useBoardStore = defineStore("board", () => {
     fileLetterArray,
     updateBoardState,
     getPosition,
+    hoveringSquare,
+    activeSquare,
+    availableSquares,
   };
 });

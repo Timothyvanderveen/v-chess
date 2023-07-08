@@ -1,10 +1,9 @@
-import { defineStore, storeToRefs } from "pinia";
+import { defineStore } from "pinia";
 import { useBoardStore } from "./board";
-import { computed } from "vue";
 
 export const useSquareStore = defineStore("square", () => {
+  // stores
   const boardStore = useBoardStore();
-  const { boardState } = storeToRefs(boardStore);
 
   const getColour = (squareId: number): vSquareColour => {
     // if the rank is even then start with black squares
@@ -26,44 +25,37 @@ export const useSquareStore = defineStore("square", () => {
     throw Error("invalid colour");
   };
 
-  const getPosition = computed((fileIndex: number, rankIndex: number) => {
-    // calculate the translate percentage
-    const x = (fileIndex - 1) * 100;
-    // since the board starts in lower left corner, count backwards
-    const y = (8 - rankIndex) * 100;
-    return `${x}% ${y}%`;
-  });
-
   const getFileBySquareIndex = (squareIndex: number): vSquareFileNumber => {
     const file: number | null =
-      boardStore.fileArray[(squareIndex - 1) % 8] ?? null;
+      boardStore.fileArray[Math.ceil(squareIndex / 8) - 1] ?? null;
     if (file === null) throw Error(`invalid file: ${squareIndex}`);
     return file as vSquareFileNumber;
   };
 
   const getRankBySquareIndex = (squareIndex: number): vSquareRankNumber => {
-    const rank: number | null =
-      boardStore.rankArray[Math.ceil(squareIndex / 8) - 1];
+    const rank: number | null = boardStore.rankArray[(squareIndex - 1) % 8];
     if (rank === null) throw Error(`invalid rank: ${squareIndex}`);
     return rank as vSquareRankNumber;
   };
 
-  const getCoordinates = (squareIndex: number) => {
-    return parseInt(
-      `${getFileBySquareIndex(squareIndex)}${getRankBySquareIndex(squareIndex)}`
-    );
+  const getRankFileObject = (squareIndex: number) => {
+    return {
+      rank: getRankBySquareIndex(squareIndex),
+      file: getFileBySquareIndex(squareIndex),
+    };
   };
 
-  const getPieceState = (squareIndex: number) => {
-    return boardState.value[getCoordinates(squareIndex)]?.piece;
+  const getCoordinates = (squareIndex: number) => {
+    return parseInt(
+      `${getRankBySquareIndex(squareIndex)}${getFileBySquareIndex(squareIndex)}`
+    );
   };
 
   return {
     getColour,
-    getPosition,
     getRankBySquareIndex,
     getFileBySquareIndex,
     getCoordinates,
-    getPieceState,
+    getRankFileObject,
   };
 });
