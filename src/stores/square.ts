@@ -38,11 +38,44 @@ export const useSquareStore = defineStore("square", () => {
     return rank as vSquareRankNumber;
   };
 
-  const getRankFileObject = (squareIndex: number) => {
+  const getRankFileObject = (
+    squareIndex: number
+  ): { file: vSquareFileNumber; rank: vSquareRankNumber } => {
     return {
       rank: getRankBySquareIndex(squareIndex),
       file: getFileBySquareIndex(squareIndex),
     };
+  };
+
+  const getSquareIndexByCoordinates = ({
+    file,
+    rank,
+  }: {
+    file: vSquareFileNumber;
+    rank: vSquareRankNumber;
+  }): number => {
+    return (
+      boardStore.boardState.find((e) => e.file === file && e.rank === rank)
+        ?.squareIndex ?? -1
+    );
+  };
+
+  const hasPiece = (squareIndex: number) => {
+    return boardStore.boardState.some(
+      (e) => e.piece && e.squareIndex === squareIndex
+    );
+  };
+
+  const hasOpponentPiece = (squareIndex: number, owner: vPlayerColour) => {
+    return boardStore.boardState.some((e) => {
+      if (!e.piece) return;
+      const isOpponent =
+        owner === "white"
+          ? e.piece === e.piece.toUpperCase()
+          : e.piece === e.piece.toLowerCase();
+
+      return e.piece && e.squareIndex === squareIndex && isOpponent;
+    });
   };
 
   const getCoordinates = (squareIndex: number) => {
@@ -61,5 +94,8 @@ export const useSquareStore = defineStore("square", () => {
     getFileBySquareIndex,
     getCoordinates,
     getRankFileObject,
+    hasPiece,
+    hasOpponentPiece,
+    getSquareIndexByCoordinates,
   };
 });

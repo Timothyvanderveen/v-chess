@@ -21,7 +21,23 @@ type vPieceType =
 type vBoardState = Array<vSquareState>;
 
 interface vSquareState {
-  coordinates: number;
+  file: vSquareFileNumber;
+  rank: vSquareRankNumber;
   piece: vPieceType | null;
   squareIndex: number;
 }
+
+interface AvailableMoveCollection {
+  cardinal?: Array<AvailableMove>;
+  diagonal?: Array<AvailableMove>;
+  horse?: Array<AvailableMove>;
+}
+
+type AvailableMove = {
+  rank: vSquareRankNumber;
+  file: vSquareFileNumber;
+};
+
+type MoveType = "horse" | "diagonal" | "cardinal";
+
+type CardinalDirections = "up" | "down" | "right" | "left";

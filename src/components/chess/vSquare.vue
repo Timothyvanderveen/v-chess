@@ -5,11 +5,14 @@
     :class="{
       [`v-square__colour--${props.colour}`]: true,
       hovering: isHovering,
-      available: isAvailable,
+      available: isAvailable && !thisHasAnyPiece,
+      [`available-with-piece`]: isAvailable && thisHasOpponentPiece,
     }"
     :style="{ translate: getPosition }"
     :data-square-index="props.squareIndex"
-  />
+  >
+    <div style="position: absolute">{{ squareIndex }}</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -21,9 +24,10 @@ import { ref, type PropType, type Ref, computed, onMounted } from "vue";
 
 // stores
 const boardStore = useBoardStore();
-const { activeSquare, hoveringSquare, availableSquares } = storeToRefs(
+const { hoveringSquare, availableMoveCollection } = storeToRefs(
   useBoardStore()
 );
+const { getRankFileObject, hasOpponentPiece, hasPiece } = useSquareStore();
 
 // props
 const props = defineProps({
@@ -46,18 +50,29 @@ const isHovering = computed(() => {
   }
   return false;
 });
-// const isActive = computed(() => {
-//   const hoveringAvailableSquare = availableSquares.value.includes(
-//     getCoordinates(hoveringSquare.value)
-//   );
-//   if (props.squareIndex === activeSquare.value && !hoveringAvailableSquare) {
-//     return true;
-//   }
-//   return false;
-// });
-const isAvailable = computed(() =>
-  availableSquares.value.includes(getCoordinates(props.squareIndex))
-);
+
+const thisHasAnyPiece = computed(() => {
+  return hasPiece(props.squareIndex);
+});
+
+const thisHasOpponentPiece = computed(() => {
+  return hasOpponentPiece(props.squareIndex, props.colour);
+});
+
+const isAvailable = computed(() => {
+  const { file, rank } = getRankFileObject(props.squareIndex);
+  return availableMoveCollection.value.some((availableMove) => {
+    return (["horse", "diagonal", "cardinal"] as Array<MoveType>).some(
+      (moveType) => {
+        return availableMove[moveType]?.some((availableMoveType) => {
+          return (
+            availableMoveType.file === file && availableMoveType.rank === rank
+          );
+        });
+      }
+    );
+  });
+});
 
 onMounted(() => {
   squareElement.value?.addEventListener("mouseover", ({ clientX, clientY }) => {
@@ -70,9 +85,6 @@ onMounted(() => {
     () => (hoveringSquare.value = 0)
   );
 });
-
-// stores
-const { getCoordinates } = useSquareStore();
 
 // square logic
 
@@ -95,19 +107,29 @@ const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
   &::after {
     content: "";
     position: absolute;
-    background: #262626;
+    background-color: transparent;
     /* width: 100%; */
+    border: 0 solid #262626;
     opacity: 0;
     inset: 50%;
     border-radius: 50%;
-    transition: inset 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
   }
 
   &.available {
     cursor: pointer;
     &::after {
+      background-color: #262626;
       inset: 30%;
       opacity: 0.2;
+    }
+  }
+  &.available-with-piece {
+    cursor: pointer;
+    &::after {
+      inset: 0;
+      opacity: 0.2;
+      border-width: 0.5vmin;
     }
   }
 }

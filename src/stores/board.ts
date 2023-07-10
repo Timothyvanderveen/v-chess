@@ -16,7 +16,7 @@ export const useBoardStore = defineStore("board", () => {
 
   // board state
   const boardState: Ref<vBoardState> = ref([]);
-  const availableSquares: Ref<Array<number>> = ref([]);
+  const availableMoveCollection: Ref<Array<AvailableMoveCollection>> = ref([]);
   const hoveringSquare = ref(0);
   const activeSquare = ref(0);
 
@@ -50,6 +50,6 @@ export const useBoardStore = defineStore("board", () => {
     getPosition,
     hoveringSquare,
     activeSquare,
-    availableSquares,
+    availableMoveCollection,
   };
 });

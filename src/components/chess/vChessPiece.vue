@@ -20,6 +20,7 @@
 import { useBoardStore } from "@/stores/board";
 import { usePieceStore } from "@/stores/piece";
 import { useSquareStore } from "@/stores/square";
+import { counter } from "@fortawesome/fontawesome-svg-core";
 import { storeToRefs } from "pinia";
 import { type PropType, computed, onMounted, ref, type Ref, watch } from "vue";
 
@@ -71,8 +72,9 @@ const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
 
 const isWhite = computed(() => getOwner(props.pieceType) === "white");
 
-const { getRankFileObject } = useSquareStore();
-const { availableSquares } = storeToRefs(useBoardStore());
+const { getRankFileObject, hasPiece, getSquareIndexByCoordinates } =
+  useSquareStore();
+const { availableMoveCollection } = storeToRefs(useBoardStore());
 
 watch(
   () => activeSquare.value,
@@ -84,20 +86,89 @@ watch(
 );
 
 const setAvailableSquares = () => {
-  availableSquares.value = [];
+  availableMoveCollection.value = [];
   if (props.pieceType.toLowerCase() === "p") {
-    const { file, rank } = getRankFileObject(props.squareIndex);
-
-    availableSquares.value.push(
-      parseInt(`${rank}${file + (isWhite.value ? 1 : -1)}`)
-    );
-
-    if (file === 2 || file === 7) {
-      availableSquares.value.push(
-        parseInt(`${rank}${file + (isWhite.value ? 2 : -2)}`)
-      );
-    }
+    setAvailablePawnMoves();
   }
+  if (props.pieceType.toLowerCase() === "r") {
+    setFullCardinalMoves();
+  }
+};
+
+const setAvailablePawnMoves = () => {
+  const { file, rank } = getRankFileObject(props.squareIndex);
+
+  const cardinalObject = {
+    cardinal: [
+      { rank, file: (file + (isWhite.value ? 1 : -1)) as vSquareFileNumber },
+    ],
+  };
+
+  if (file === 2 || file === 7) {
+    cardinalObject.cardinal?.push({
+      rank,
+      file: (file + (isWhite.value ? 2 : -2)) as vSquareFileNumber,
+    });
+  }
+
+  availableMoveCollection.value.push(cardinalObject);
+};
+
+const setFullCardinalMoves = () => {
+  const { file, rank } = getRankFileObject(props.squareIndex);
+
+  (["up", "down", "right", "left"] as CardinalDirections[]).forEach(
+    (direction) => {
+      const cardinalObject: AvailableMoveCollection = { cardinal: [] };
+
+      let availableSteps;
+      let encounteredPiece = false;
+
+      if (direction === "up" || direction === "down") {
+        availableSteps = direction === "up" ? 8 - file : file - 1;
+      } else {
+        availableSteps = direction === "right" ? 8 - rank : rank - 1;
+      }
+
+      Array.from(Array(availableSteps).keys()).forEach((counter) => {
+        if (encounteredPiece) {
+          return;
+        }
+
+        const updatedCounter =
+          direction === "up" || direction === "right"
+            ? counter + 1
+            : -counter - 1;
+
+        let newFile;
+        let newRank;
+
+        if (direction === "up" || direction === "down") {
+          newFile = (file + updatedCounter) as vSquareRankNumber;
+          newRank = rank as vSquareRankNumber;
+        } else {
+          newFile = file as vSquareRankNumber;
+          newRank = (rank + updatedCounter) as vSquareRankNumber;
+        }
+
+        const squareIndex = getSquareIndexByCoordinates({
+          file: newFile,
+          rank: newRank,
+        });
+
+        if (hasPiece(squareIndex)) {
+          encounteredPiece = true;
+        }
+
+        cardinalObject.cardinal?.push({
+          file: newFile,
+          rank: newRank,
+        });
+      });
+
+      availableMoveCollection.value.push(cardinalObject);
+    }
+  );
 };
 </script>
 

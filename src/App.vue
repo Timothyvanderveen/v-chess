@@ -13,7 +13,7 @@ import { useBoardStore } from "./stores/board";
 
 // stores
 const boardStore = useBoardStore();
-const { activeSquare, hoveringSquare, availableSquares } =
+const { activeSquare, hoveringSquare, availableMoveCollection } =
   storeToRefs(boardStore);
 
 onMounted(() => {
@@ -26,7 +26,7 @@ onMounted(() => {
     } else {
       activeSquare.value = 0;
       hoveringSquare.value = 0;
-      availableSquares.value = [];
+      availableMoveCollection.value = [];
     }
   });
 });
