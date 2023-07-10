@@ -1,13 +1,16 @@
 import { defineStore } from "pinia";
 import { useSquareStore } from "./square";
-import { useBoardStore } from "./board";
+import { usePieceStore } from "./piece";
 
 export const useFenStore = defineStore("fen", () => {
+  // stores
   const squareStore = useSquareStore();
-  const { getRankFileObject } = useSquareStore();
+  const { addPiece } = usePieceStore();
 
-  const startingFen = "4R3/1P3r2/p7/2pK3P/r5Bp/5Q1R/2p3PP/1k6 w - - 0 1";
-  // const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+  // fen parsing
+
+  // const startingFen = "q1r5/B2pQ3/8/R1P1K3/7p/2k3Pp/R4n1P/r7 w - - 0 1";
+  const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
   const parseFenToBoardState = (
     startingFenParam: string | null = null
@@ -31,24 +34,25 @@ export const useFenStore = defineStore("fen", () => {
         }
 
         const rankNumber = parseInt(value);
-        const { rank, file } = getRankFileObject(squareIndex);
         if (rankNumber) {
           Array.from(Array(rankNumber).keys()).forEach(() => {
+            const { rank, file } = squareStore.getRankFileObject(squareIndex);
             boardState.push({
               rank,
               file,
-              piece: null,
               squareIndex,
             });
             squareIndex++;
           });
         } else {
+          const { rank, file } = squareStore.getRankFileObject(squareIndex);
           boardState.push({
             rank,
             file,
-            piece: value as vPieceType,
             squareIndex,
           });
+
+          addPiece({ squareIndex, pieceType: value as vPieceType });
 
           squareIndex++;
         }

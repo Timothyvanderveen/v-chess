@@ -5,31 +5,29 @@
     :class="{
       [`v-square__colour--${props.colour}`]: true,
       hovering: isHovering,
-      available: isAvailable && !thisHasAnyPiece,
-      [`available-with-piece`]: isAvailable && thisHasOpponentPiece,
+      available: isAvailable,
+      takeable: isTakeable,
     }"
-    :style="{ translate: getPosition }"
+    :style="{ translate: getPosition() }"
     :data-square-index="props.squareIndex"
-  >
-    <div style="position: absolute">{{ squareIndex }}</div>
-  </div>
+  />
 </template>
 
 <script setup lang="ts">
-// imports
 import { useBoardStore } from "@/stores/board";
 import { useSquareStore } from "@/stores/square";
 import { storeToRefs } from "pinia";
 import { ref, type PropType, type Ref, computed, onMounted } from "vue";
 
 // stores
-const boardStore = useBoardStore();
-const { hoveringSquare, availableMoveCollection } = storeToRefs(
+const { hoveringSquare, availableMoveArray, availableTakeArray } = storeToRefs(
   useBoardStore()
 );
-const { getRankFileObject, hasOpponentPiece, hasPiece } = useSquareStore();
+
+const { getFileBySquareIndex, getRankBySquareIndex } = useSquareStore();
 
 // props
+
 const props = defineProps({
   squareIndex: {
     type: Number,
@@ -43,7 +41,17 @@ const props = defineProps({
 });
 
 // html manipulation
+
 const squareElement = ref(null) as Ref<HTMLElement | null>;
+
+const getPosition = () => {
+  const x = (getRankBySquareIndex(props.squareIndex) - 1) * 100;
+  const y = (8 - getFileBySquareIndex(props.squareIndex)) * 100;
+  return `${x}% ${y}%`;
+};
+
+// square information
+
 const isHovering = computed(() => {
   if (props.squareIndex === hoveringSquare.value) {
     return true;
@@ -51,31 +59,18 @@ const isHovering = computed(() => {
   return false;
 });
 
-const thisHasAnyPiece = computed(() => {
-  return hasPiece(props.squareIndex);
-});
-
-const thisHasOpponentPiece = computed(() => {
-  return hasOpponentPiece(props.squareIndex, props.colour);
+const isTakeable = computed(() => {
+  return availableTakeArray.value.includes(props.squareIndex);
 });
 
 const isAvailable = computed(() => {
-  const { file, rank } = getRankFileObject(props.squareIndex);
-  return availableMoveCollection.value.some((availableMove) => {
-    return (["horse", "diagonal", "cardinal"] as Array<MoveType>).some(
-      (moveType) => {
-        return availableMove[moveType]?.some((availableMoveType) => {
-          return (
-            availableMoveType.file === file && availableMoveType.rank === rank
-          );
-        });
-      }
-    );
-  });
+  return availableMoveArray.value.includes(props.squareIndex);
 });
 
+// events
+
 onMounted(() => {
-  squareElement.value?.addEventListener("mouseover", ({ clientX, clientY }) => {
+  squareElement.value?.addEventListener("mouseover", () => {
     if (isAvailable.value) {
       hoveringSquare.value = props.squareIndex;
     }
@@ -85,10 +80,6 @@ onMounted(() => {
     () => (hoveringSquare.value = 0)
   );
 });
-
-// square logic
-
-const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
 </script>
 
 <style lang="scss" scoped>
@@ -124,7 +115,7 @@ const getPosition = computed(() => boardStore.getPosition(props.squareIndex));
       opacity: 0.2;
     }
   }
-  &.available-with-piece {
+  &.takeable {
     cursor: pointer;
     &::after {
       inset: 0;

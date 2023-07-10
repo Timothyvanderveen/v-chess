@@ -5,18 +5,22 @@ import { type Ref, ref } from "vue";
 
 export const useBoardStore = defineStore("board", () => {
   // stores
+
   const { parseFenToBoardState } = useFenStore();
   const squareStore = useSquareStore();
 
   // constants
+
   const squareArray = Array.from(Array(64).keys()).map((e) => ++e);
   const rankArray = Array.from(Array(8).keys()).map((e) => ++e);
   const fileArray = Array.from(Array(8).keys()).map((e) => ++e);
   const fileLetterArray = "abcdefgh".split("");
 
   // board state
+
   const boardState: Ref<vBoardState> = ref([]);
-  const availableMoveCollection: Ref<Array<AvailableMoveCollection>> = ref([]);
+  const availableMoveArray: Ref<Array<number>> = ref([]);
+  const availableTakeArray: Ref<Array<number>> = ref([]);
   const hoveringSquare = ref(0);
   const activeSquare = ref(0);
 
@@ -31,12 +35,11 @@ export const useBoardStore = defineStore("board", () => {
     });
   };
 
-  const getPosition = (squareIndex: number) => {
-    // calculate the translate percentage
-    const x = (squareStore.getRankBySquareIndex(squareIndex) - 1) * 100;
-    // since the board starts in lower left corner, count backwards
-    const y = (8 - squareStore.getFileBySquareIndex(squareIndex)) * 100;
-    return `${x}% ${y}%`;
+  const unselectPiece = () => {
+    activeSquare.value = 0;
+    hoveringSquare.value = 0;
+    availableMoveArray.value = [];
+    availableTakeArray.value = [];
   };
 
   return {
@@ -47,9 +50,10 @@ export const useBoardStore = defineStore("board", () => {
     populateBoardState,
     fileLetterArray,
     updateBoardState,
-    getPosition,
     hoveringSquare,
     activeSquare,
-    availableMoveCollection,
+    availableMoveArray,
+    availableTakeArray,
+    unselectPiece,
   };
 });

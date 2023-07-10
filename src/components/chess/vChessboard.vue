@@ -2,7 +2,7 @@
   <div ref="chessboard" class="v-chessboard">
     <div class="v-chessboard__squares">
       <vSquare
-        v-for="squareIndex in boardStore.squareArray"
+        v-for="squareIndex in squareArray"
         :key="squareIndex"
         :square-index="squareIndex"
         :colour="getColour(squareIndex)"
@@ -13,21 +13,21 @@
 
     <div class="v-chessboard__pieces">
       <vChessPiece
-        v-for="(pieceState, id) in boardStore.boardState.filter((e) => e.piece)"
+        v-for="(piece, id) in pieceCollection"
         :key="id"
-        :piece-type="pieceState.piece!"
-        :square-index="pieceState.squareIndex"
+        :piece-type="piece.type"
+        :square-index="piece.squareIndex"
       />
     </div>
 
     <div class="v-chessboard__coordinates">
       <div class="v-chessboard__coordinates--files">
-        <span v-for="file in boardStore.fileLetterArray" :key="file">
+        <span v-for="file in fileLetterArray" :key="file">
           {{ file.toUpperCase() }}
         </span>
       </div>
       <div class="v-chessboard__coordinates--ranks">
-        <span v-for="rank in boardStore.rankArray" :key="rank">
+        <span v-for="rank in rankArray" :key="rank">
           {{ rank }}
         </span>
       </div>
@@ -36,23 +36,76 @@
 </template>
 
 <script setup lang="ts">
-// imports
 import vSquare from "./vSquare.vue";
 import vChessPiece from "./vChessPiece.vue";
 import { useSquareStore } from "@/stores/square";
 import { useBoardStore } from "@/stores/board";
 import { onMounted, ref, type Ref } from "vue";
+import { usePieceStore } from "@/stores/piece";
+import { storeToRefs } from "pinia";
 
 // stores
 const { getColour, getRankBySquareIndex, getFileBySquareIndex } =
   useSquareStore();
-const boardStore = useBoardStore();
+
+const {
+  populateBoardState,
+  squareArray,
+  rankArray,
+  fileLetterArray,
+  unselectPiece,
+} = useBoardStore();
+const { activeSquare } = storeToRefs(useBoardStore());
+
+const { movePiece } = usePieceStore();
+const { pieceCollection } = storeToRefs(usePieceStore());
 
 // html
+
 const chessboard: Ref<HTMLElement | null> = ref(null);
 
+// board state
+
 onMounted(() => {
-  boardStore.populateBoardState();
+  populateBoardState();
+});
+
+// events
+
+onMounted(() => {
+  chessboard.value?.addEventListener("mousedown", (e) => {
+    const element = document.elementFromPoint(
+      e.clientX,
+      e.clientY
+    ) as HTMLElement;
+
+    if (element?.classList.contains("v-piece")) {
+      e.preventDefault();
+
+      const squareIndex = parseInt(
+        element.parentElement?.dataset.squareIndex as string
+      );
+
+      if (activeSquare.value) {
+        movePiece(squareIndex, activeSquare.value);
+      } else {
+        activeSquare.value = squareIndex;
+        return;
+      }
+    }
+
+    if (element?.classList.contains("v-square")) {
+      e.preventDefault();
+
+      const squareIndex = parseInt(element?.dataset.squareIndex as string);
+
+      if (activeSquare.value) {
+        movePiece(squareIndex, activeSquare.value);
+      }
+    }
+
+    unselectPiece();
+  });
 });
 </script>
 

@@ -1,9 +1,15 @@
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { useBoardStore } from "./board";
+import { usePieceStore } from "./piece";
 
 export const useSquareStore = defineStore("square", () => {
   // stores
+
   const boardStore = useBoardStore();
+
+  const { pieceCollection } = storeToRefs(usePieceStore());
+
+  // square information
 
   const getColour = (squareId: number): vSquareColour => {
     // if the rank is even then start with black squares
@@ -54,27 +60,31 @@ export const useSquareStore = defineStore("square", () => {
     file: vSquareFileNumber;
     rank: vSquareRankNumber;
   }): number => {
-    return (
-      boardStore.boardState.find((e) => e.file === file && e.rank === rank)
-        ?.squareIndex ?? -1
-    );
+    const squareIndex = boardStore.boardState.find((e) => {
+      return e.file === file && e.rank === rank;
+    })?.squareIndex;
+
+    if (!squareIndex) {
+      throw new Error(`invalid coordinates: ${file}:${rank}`);
+    }
+
+    return squareIndex;
   };
 
   const hasPiece = (squareIndex: number) => {
-    return boardStore.boardState.some(
-      (e) => e.piece && e.squareIndex === squareIndex
-    );
+    return Object.entries(pieceCollection.value).some((entries) => {
+      return entries[1].squareIndex === squareIndex;
+    });
   };
 
   const hasOpponentPiece = (squareIndex: number, owner: vPlayerColour) => {
-    return boardStore.boardState.some((e) => {
-      if (!e.piece) return;
+    return Object.entries(pieceCollection.value).some((entries) => {
       const isOpponent =
         owner === "white"
-          ? e.piece === e.piece.toUpperCase()
-          : e.piece === e.piece.toLowerCase();
+          ? entries[1].type === entries[1].type.toLowerCase()
+          : entries[1].type === entries[1].type.toUpperCase();
 
-      return e.piece && e.squareIndex === squareIndex && isOpponent;
+      return entries[1].squareIndex === squareIndex && isOpponent;
     });
   };
 
