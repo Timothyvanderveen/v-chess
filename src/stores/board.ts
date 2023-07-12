@@ -1,13 +1,11 @@
 import { defineStore } from "pinia";
 import { useFenStore } from "./fen";
-import { useSquareStore } from "./square";
 import { type Ref, ref } from "vue";
 
 export const useBoardStore = defineStore("board", () => {
   // stores
-
   const { parseFenToBoardState } = useFenStore();
-  const squareStore = useSquareStore();
+  // const squareStore = useSquareStore();
 
   // constants
 
@@ -42,6 +40,13 @@ export const useBoardStore = defineStore("board", () => {
     availableTakeArray.value = [];
   };
 
+  const squareIsMoveable = (squareIndex: number) =>
+    availableMoveArray.value.includes(squareIndex) ||
+    availableTakeArray.value.includes(squareIndex);
+
+  const squareIsTakeable = (squareIndex: number) =>
+    availableTakeArray.value.includes(squareIndex);
+
   return {
     squareArray,
     rankArray,
@@ -55,5 +60,7 @@ export const useBoardStore = defineStore("board", () => {
     availableMoveArray,
     availableTakeArray,
     unselectPiece,
+    squareIsMoveable,
+    squareIsTakeable,
   };
 });

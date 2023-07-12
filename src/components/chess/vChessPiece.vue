@@ -11,6 +11,7 @@
       :src="pieceImage"
       class="v-piece"
       draggable="false"
+      :data-piece-type="props.pieceType"
     />
   </div>
 </template>
@@ -37,7 +38,7 @@ const props = defineProps({
 
 // store
 
-const { getOwner } = usePieceStore();
+const { getOwner, startCantMoveAnimation } = usePieceStore();
 
 const boardStore = useBoardStore();
 const { hoveringSquare, activeSquare, availableMoveArray, availableTakeArray } =
@@ -104,18 +105,7 @@ watch(
 
       if (!hasSquares) {
         activeSquare.value = 0;
-        chessPiece.value?.animate(
-          [
-            { transform: "rotate(0) scale(1)" },
-            { transform: "rotate(15deg) scale(1.1)" },
-            { transform: "rotate(-15deg) scale(1.1)" },
-            { transform: "rotate(15deg) scale(1.1)" },
-            { transform: "rotate(0) scale(1)" },
-          ],
-          {
-            duration: 500,
-          }
-        );
+        startCantMoveAnimation(props.squareIndex);
       }
     }
   }
@@ -133,9 +123,17 @@ const setAvailableSquares = () => {
   }
   if (props.pieceType.toLowerCase() === "k") {
     setCardinalMovesAndTakes(1);
+    setDiagonalMovesAndTakes(1);
   }
   if (props.pieceType.toLowerCase() === "q") {
     setCardinalMovesAndTakes();
+    setDiagonalMovesAndTakes();
+  }
+  if (props.pieceType.toLowerCase() === "b") {
+    setDiagonalMovesAndTakes();
+  }
+  if (props.pieceType.toLowerCase() === "n") {
+    setHorseMoveAndTakes();
   }
 
   return (
@@ -199,17 +197,16 @@ const setCardinalMovesAndTakes = (steps: number | null = null) => {
   (["up", "down", "right", "left"] as CardinalDirections[]).forEach(
     (direction) => {
       let availableSteps;
-      let encounteredPiece = false;
 
       if (direction === "up" || direction === "down") {
-        availableSteps = steps ?? (direction === "up" ? 8 - file : file - 1);
+        availableSteps = direction === "up" ? 8 - file : file - 1;
       } else {
-        availableSteps = steps ?? (direction === "right" ? 8 - rank : rank - 1);
+        availableSteps = direction === "right" ? 8 - rank : rank - 1;
       }
 
-      Array.from(Array(availableSteps).keys()).forEach((counter) => {
-        if (encounteredPiece) {
-          return;
+      Array.from(Array(availableSteps).keys()).some((counter) => {
+        if (steps && counter === steps) {
+          return true;
         }
 
         const updatedCounter =
@@ -234,15 +231,146 @@ const setCardinalMovesAndTakes = (steps: number | null = null) => {
         });
 
         if (hasPiece(squareIndex)) {
-          encounteredPiece = true;
           if (hasOpponentPiece(squareIndex, getOwner(props.pieceType))) {
             availableTakeArray.value.push(squareIndex);
           }
-          return;
+          return true;
         }
 
         availableMoveArray.value.push(squareIndex);
       });
+    }
+  );
+};
+
+const setDiagonalMovesAndTakes = (steps: number | null = null) => {
+  const { file, rank } = getRankFileObject(props.squareIndex);
+
+  (
+    ["topleft", "topright", "bottomright", "bottomleft"] as DiagonalDirections[]
+  ).forEach((direction) => {
+    let availableSteps;
+
+    if (direction === "topleft") {
+      availableSteps = Math.min(8 - file, rank - 1);
+    }
+    if (direction === "topright") {
+      availableSteps = Math.min(8 - file, 8 - rank);
+    }
+    if (direction === "bottomright") {
+      availableSteps = Math.min(file - 1, 8 - rank);
+    }
+    if (direction === "bottomleft") {
+      availableSteps = Math.min(file - 1, rank - 1);
+    }
+
+    Array.from(Array(availableSteps).keys()).some((counter) => {
+      if (steps && counter === steps) {
+        return true;
+      }
+
+      const upDownCounter =
+        direction === "topleft" || direction === "topright"
+          ? counter + 1
+          : -counter - 1;
+
+      const leftRightCounter =
+        direction === "topright" || direction === "bottomright"
+          ? counter + 1
+          : -counter - 1;
+
+      const newFile = file + upDownCounter;
+      const newRank = rank + leftRightCounter;
+
+      const squareIndex = getSquareIndexByCoordinates({
+        file: newFile as vSquareFileNumber,
+        rank: newRank as vSquareRankNumber,
+      });
+
+      if (hasPiece(squareIndex)) {
+        if (hasOpponentPiece(squareIndex, getOwner(props.pieceType))) {
+          availableTakeArray.value.push(squareIndex);
+        }
+        return true;
+      }
+
+      availableMoveArray.value.push(squareIndex);
+    });
+  });
+};
+
+const setHorseMoveAndTakes = () => {
+  const { file, rank } = getRankFileObject(props.squareIndex);
+
+  // (["up", "down"] as CardinalDirections[]).forEach(
+  (["up", "down", "right", "left"] as CardinalDirections[]).forEach(
+    (firstStep) => {
+      // (["up", "down", "right", "left"] as CardinalDirections[]).some(
+      (["up", "down", "right", "left"] as CardinalDirections[]).forEach(
+        (secondStep) => {
+          let firstStepCounter = 0;
+          let secondStepCounter = 0;
+
+          if (
+            (firstStep === "up" || firstStep === "down") &&
+            (secondStep === "up" || secondStep === "down")
+          ) {
+            return;
+          }
+
+          if (
+            (firstStep === "left" || firstStep === "right") &&
+            (secondStep === "left" || secondStep === "right")
+          ) {
+            return;
+          }
+
+          if (firstStep === "up" || firstStep === "right") {
+            firstStepCounter = 2;
+          }
+          if (firstStep === "down" || firstStep === "left") {
+            firstStepCounter = -2;
+          }
+
+          if (secondStep === "up" || secondStep === "right") {
+            secondStepCounter = 1;
+          }
+          if (secondStep === "down" || secondStep === "left") {
+            secondStepCounter = -1;
+          }
+
+          let newFile = file as number;
+          let newRank = rank as number;
+
+          if (firstStep === "up" || firstStep === "down") {
+            newFile = file + firstStepCounter;
+            newRank = rank + secondStepCounter;
+          }
+
+          if (firstStep === "left" || firstStep === "right") {
+            newFile = file + secondStepCounter;
+            newRank = rank + firstStepCounter;
+          }
+
+          if (newFile > 8 || newFile < 1 || newRank > 8 || newRank < 1) {
+            return true;
+          }
+
+          const squareIndex = getSquareIndexByCoordinates({
+            file: newFile as vSquareFileNumber,
+            rank: newRank as vSquareRankNumber,
+          });
+
+          if (hasPiece(squareIndex)) {
+            if (hasOpponentPiece(squareIndex, getOwner(props.pieceType))) {
+              availableTakeArray.value.push(squareIndex);
+            }
+            return true;
+          }
+
+          availableMoveArray.value.push(squareIndex);
+        }
+      );
     }
   );
 };

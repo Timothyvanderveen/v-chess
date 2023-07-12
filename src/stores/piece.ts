@@ -84,6 +84,27 @@ export const usePieceStore = defineStore("piece", () => {
     }
   };
 
+  const getPieceElement = (squareIndex: number): HTMLElement | null => {
+    return document.querySelector(
+      `.v-piece__wrapper[data-square-index="${squareIndex}"] .v-piece`
+    );
+  };
+
+  const startCantMoveAnimation = (squareIndex: number) => {
+    getPieceElement(squareIndex)?.animate(
+      [
+        { transform: "rotate(0) scale(1)" },
+        { transform: "rotate(15deg) scale(1.1)" },
+        { transform: "rotate(-15deg) scale(1.1)" },
+        { transform: "rotate(15deg) scale(1.1)" },
+        { transform: "rotate(0) scale(1)" },
+      ],
+      {
+        duration: 500,
+      }
+    );
+  };
+
   return {
     getOwner,
     hasMove,
@@ -91,5 +112,7 @@ export const usePieceStore = defineStore("piece", () => {
     addPiece,
     removePiece,
     movePiece,
+    startCantMoveAnimation,
+    getPieceElement,
   };
 });

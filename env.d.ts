@@ -39,6 +39,7 @@ type AvailableMove = {
 type MoveType = "horse" | "diagonal" | "cardinal";
 
 type CardinalDirections = "up" | "down" | "right" | "left";
+type DiagonalDirections = "topleft" | "topright" | "bottomright" | "bottomleft";
 
 // pieces
 

@@ -45,8 +45,12 @@ import { usePieceStore } from "@/stores/piece";
 import { storeToRefs } from "pinia";
 
 // stores
-const { getColour, getRankBySquareIndex, getFileBySquareIndex } =
-  useSquareStore();
+const {
+  getColour,
+  getRankBySquareIndex,
+  getFileBySquareIndex,
+  hasOpponentPiece,
+} = useSquareStore();
 
 const {
   populateBoardState,
@@ -54,10 +58,14 @@ const {
   rankArray,
   fileLetterArray,
   unselectPiece,
+  squareIsMoveable,
+  squareIsTakeable,
 } = useBoardStore();
+
 const { activeSquare } = storeToRefs(useBoardStore());
 
-const { movePiece } = usePieceStore();
+const { movePiece, startCantMoveAnimation, getOwner, getPieceElement } =
+  usePieceStore();
 const { pieceCollection } = storeToRefs(usePieceStore());
 
 // html
@@ -86,11 +94,39 @@ onMounted(() => {
         element.parentElement?.dataset.squareIndex as string
       );
 
-      if (activeSquare.value) {
-        movePiece(squareIndex, activeSquare.value);
-      } else {
+      const activePiece = getPieceElement(activeSquare.value);
+      const currentPiece = element;
+
+      if (!activePiece) {
         activeSquare.value = squareIndex;
         return;
+      }
+
+      if (!currentPiece) {
+        return;
+      }
+
+      const activePieceType = activePiece.dataset.pieceType as vPieceType;
+      const currentPieceType = currentPiece.dataset.pieceType as vPieceType;
+
+      if (
+        getOwner(currentPieceType) === getOwner(activePieceType) &&
+        activeSquare.value
+      ) {
+        activeSquare.value = squareIndex;
+        return;
+      }
+
+      if (activeSquare.value && activePiece) {
+        if (
+          hasOpponentPiece(squareIndex, getOwner(activePieceType)) &&
+          squareIsTakeable(squareIndex)
+        ) {
+          movePiece(squareIndex, activeSquare.value);
+        } else {
+          startCantMoveAnimation(activeSquare.value);
+          return;
+        }
       }
     }
 
@@ -99,7 +135,7 @@ onMounted(() => {
 
       const squareIndex = parseInt(element?.dataset.squareIndex as string);
 
-      if (activeSquare.value) {
+      if (activeSquare.value && squareIsMoveable(squareIndex)) {
         movePiece(squareIndex, activeSquare.value);
       }
     }
