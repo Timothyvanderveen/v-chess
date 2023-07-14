@@ -125,7 +125,6 @@ export const useSquareStore = defineStore("square", () => {
     getPieceCollectionEntries,
     squareIsMoveable,
     squareIsTakeable,
-    squareIsMoveableByPiece,
     squareIsTakeableByPiece,
   };
 });
