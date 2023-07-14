@@ -14,6 +14,7 @@ type OneThroughEight = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 type vSquareFileLetter = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
 type vSquareFileNumber = OneThroughEight;
 type vSquareRankNumber = OneThroughEight;
+type RankFileObject = { file: number; rank: number };
 
 // square
 
@@ -36,10 +37,32 @@ type AvailableMove = {
   file: vSquareFileNumber;
 };
 
+interface MoveTakeObject {
+  target: string;
+  squareIndex: number;
+  action: "take" | "move";
+}
+
 type MoveType = "horse" | "diagonal" | "cardinal";
 
 type CardinalDirections = "up" | "down" | "right" | "left";
 type DiagonalDirections = "topleft" | "topright" | "bottomright" | "bottomleft";
+
+interface ChessTurn {
+  player: vPlayerColour;
+  timestamp: null | number;
+  to: null | number;
+  from: null | number;
+}
+
+interface InstructionsObject {
+  [key: string]: {
+    availableSteps: (RankFileObject) => number;
+    upDownCounter: number;
+    leftRightCounter: number;
+    target: string;
+  };
+}
 
 // pieces
 
@@ -65,4 +88,7 @@ interface vPieceObject {
   owner: vPlayerColour;
   type: pieceType;
   squareIndex: number;
+  moves: number[];
+  takes: number[];
+  id: number;
 }

@@ -5,7 +5,6 @@ import { type Ref, ref } from "vue";
 export const useBoardStore = defineStore("board", () => {
   // stores
   const { parseFenToBoardState } = useFenStore();
-  // const squareStore = useSquareStore();
 
   // constants
 
@@ -19,6 +18,8 @@ export const useBoardStore = defineStore("board", () => {
   const boardState: Ref<vBoardState> = ref([]);
   const availableMoveArray: Ref<Array<number>> = ref([]);
   const availableTakeArray: Ref<Array<number>> = ref([]);
+  const lastAvailableMoveArray: Ref<Array<number>> = ref([]);
+  const lastAvailableTakeArray: Ref<Array<number>> = ref([]);
   const hoveringSquare = ref(0);
   const activeSquare = ref(0);
 
@@ -33,20 +34,6 @@ export const useBoardStore = defineStore("board", () => {
     });
   };
 
-  const unselectPiece = () => {
-    activeSquare.value = 0;
-    hoveringSquare.value = 0;
-    availableMoveArray.value = [];
-    availableTakeArray.value = [];
-  };
-
-  const squareIsMoveable = (squareIndex: number) =>
-    availableMoveArray.value.includes(squareIndex) ||
-    availableTakeArray.value.includes(squareIndex);
-
-  const squareIsTakeable = (squareIndex: number) =>
-    availableTakeArray.value.includes(squareIndex);
-
   return {
     squareArray,
     rankArray,
@@ -59,8 +46,7 @@ export const useBoardStore = defineStore("board", () => {
     activeSquare,
     availableMoveArray,
     availableTakeArray,
-    unselectPiece,
-    squareIsMoveable,
-    squareIsTakeable,
+    lastAvailableMoveArray,
+    lastAvailableTakeArray,
   };
 });

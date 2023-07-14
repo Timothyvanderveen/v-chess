@@ -14,6 +14,7 @@
     <div class="v-chessboard__pieces">
       <vChessPiece
         v-for="(piece, id) in pieceCollection"
+        :id="parseInt(id.toString())"
         :key="id"
         :piece-type="piece.type"
         :square-index="piece.squareIndex"
@@ -43,6 +44,7 @@ import { useBoardStore } from "@/stores/board";
 import { onMounted, ref, type Ref } from "vue";
 import { usePieceStore } from "@/stores/piece";
 import { storeToRefs } from "pinia";
+import { useTurnStore } from "@/stores/turn";
 
 // stores
 const {
@@ -52,21 +54,17 @@ const {
   hasOpponentPiece,
 } = useSquareStore();
 
-const {
-  populateBoardState,
-  squareArray,
-  rankArray,
-  fileLetterArray,
-  unselectPiece,
-  squareIsMoveable,
-  squareIsTakeable,
-} = useBoardStore();
+const { populateBoardState, squareArray, rankArray, fileLetterArray } =
+  useBoardStore();
+const { availableMoveArray, availableTakeArray } = storeToRefs(useBoardStore());
 
-const { activeSquare } = storeToRefs(useBoardStore());
+const { currentPlayerTurn } = storeToRefs(useTurnStore());
 
-const { movePiece, startCantMoveAnimation, getOwner, getPieceElement } =
+const { movePiece, startCantMoveAnimation, getOwner, unselectPiece } =
   usePieceStore();
-const { pieceCollection } = storeToRefs(usePieceStore());
+const { pieceCollection, activePiece, activePieceId } = storeToRefs(
+  usePieceStore()
+);
 
 // html
 
@@ -80,6 +78,7 @@ onMounted(() => {
 
 // events
 
+// TODO move logic
 onMounted(() => {
   chessboard.value?.addEventListener("mousedown", (e) => {
     const element = document.elementFromPoint(
@@ -90,41 +89,41 @@ onMounted(() => {
     if (element?.classList.contains("v-piece")) {
       e.preventDefault();
 
-      const squareIndex = parseInt(
-        element.parentElement?.dataset.squareIndex as string
-      );
+      const clickedPieceObject = {
+        element,
+        type: element.dataset.pieceType as vPieceType,
+        owner: getOwner(element.dataset.pieceType as vPieceType),
+        id: parseInt(element.dataset.id as string),
+        squareIndex: parseInt(
+          element.parentElement?.dataset.squareIndex as string
+        ),
+      };
 
-      const activePiece = getPieceElement(activeSquare.value);
-      const currentPiece = element;
+      const noPieceSelected = !activePiece.value;
+      const isCurrentPlayerPiece =
+        clickedPieceObject.owner === currentPlayerTurn.value;
+      const selectedOwnPiece =
+        clickedPieceObject.owner === activePiece.value?.owner;
 
-      if (!activePiece) {
-        activeSquare.value = squareIndex;
+      if ((noPieceSelected && isCurrentPlayerPiece) || selectedOwnPiece) {
+        activePieceId.value = clickedPieceObject.id;
         return;
       }
 
-      if (!currentPiece) {
-        return;
-      }
-
-      const activePieceType = activePiece.dataset.pieceType as vPieceType;
-      const currentPieceType = currentPiece.dataset.pieceType as vPieceType;
-
-      if (
-        getOwner(currentPieceType) === getOwner(activePieceType) &&
-        activeSquare.value
-      ) {
-        activeSquare.value = squareIndex;
-        return;
-      }
-
-      if (activeSquare.value && activePiece) {
+      if (activePiece.value) {
         if (
-          hasOpponentPiece(squareIndex, getOwner(activePieceType)) &&
-          squareIsTakeable(squareIndex)
+          hasOpponentPiece(
+            clickedPieceObject.squareIndex,
+            activePiece.value.owner
+          ) &&
+          availableTakeArray.value.includes(clickedPieceObject.squareIndex)
         ) {
-          movePiece(squareIndex, activeSquare.value);
+          movePiece(
+            clickedPieceObject.squareIndex,
+            activePiece.value.squareIndex
+          );
         } else {
-          startCantMoveAnimation(activeSquare.value);
+          startCantMoveAnimation(activePiece.value.squareIndex);
           return;
         }
       }
@@ -135,12 +134,15 @@ onMounted(() => {
 
       const squareIndex = parseInt(element?.dataset.squareIndex as string);
 
-      if (activeSquare.value && squareIsMoveable(squareIndex)) {
-        movePiece(squareIndex, activeSquare.value);
+      if (activePiece.value && availableMoveArray.value.includes(squareIndex)) {
+        movePiece(squareIndex, activePiece.value.squareIndex);
+      } else {
+        startCantMoveAnimation(squareIndex);
+        unselectPiece();
       }
     }
 
-    unselectPiece();
+    activePieceId.value = null;
   });
 });
 </script>

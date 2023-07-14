@@ -5,8 +5,8 @@
     :class="{
       [`v-square__colour--${props.colour}`]: true,
       hovering: isHovering,
-      available: isAvailable,
-      takeable: isTakeable,
+      moveable: thisIsMoveTarget,
+      takeable: thisIsTakeTarget,
     }"
     :style="{ translate: getPosition() }"
     :data-square-index="props.squareIndex"
@@ -59,19 +59,18 @@ const isHovering = computed(() => {
   return false;
 });
 
-const isTakeable = computed(() => {
-  return availableTakeArray.value.includes(props.squareIndex);
-});
-
-const isAvailable = computed(() => {
+const thisIsMoveTarget = computed(() => {
   return availableMoveArray.value.includes(props.squareIndex);
+});
+const thisIsTakeTarget = computed(() => {
+  return availableTakeArray.value.includes(props.squareIndex);
 });
 
 // events
 
 onMounted(() => {
   squareElement.value?.addEventListener("mouseover", () => {
-    if (isAvailable.value) {
+    if (thisIsMoveTarget.value) {
       hoveringSquare.value = props.squareIndex;
     }
   });
@@ -107,7 +106,7 @@ onMounted(() => {
     transition: all 0.2s ease-in-out;
   }
 
-  &.available {
+  &.moveable {
     cursor: pointer;
     &::after {
       background-color: #262626;

@@ -1,16 +1,19 @@
 import { defineStore } from "pinia";
 import { useSquareStore } from "./square";
 import { usePieceStore } from "./piece";
+import { useTurnStore } from "./turn";
 
 export const useFenStore = defineStore("fen", () => {
   // stores
   const squareStore = useSquareStore();
   const { addPiece } = usePieceStore();
 
+  const { setNextPlayerTurn } = useTurnStore();
+
   // fen parsing
 
-  // const startingFen = "2N1k3/PP3p2/1P2p3/4N1B1/7b/4K1Pq/P4p2/4R3 w - - 0 1";
-  const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+  const startingFen = "4kq2/4p3/8/8/4Q3/8/4K3/8 w - - 0 1";
+  // const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
   const parseFenToBoardState = (
     startingFenParam: string | null = null
@@ -57,6 +60,10 @@ export const useFenStore = defineStore("fen", () => {
           squareIndex++;
         }
       });
+
+    if (fen.split(" ")[1] === "b") {
+      setNextPlayerTurn();
+    }
 
     return boardState;
   };

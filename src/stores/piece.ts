@@ -1,13 +1,16 @@
-import { defineStore, storeToRefs } from "pinia";
+import { defineStore } from "pinia";
 import { useBoardStore } from "./board";
-import { reactive } from "vue";
+import { computed, reactive, ref, type Ref } from "vue";
+import { useTurnStore } from "./turn";
 
 export const usePieceStore = defineStore("piece", () => {
   // stores
 
-  const { availableMoveArray, availableTakeArray } = storeToRefs(
-    useBoardStore()
-  );
+  // const { availableMoveArray, availableTakeArray } = storeToRefs(
+  //   useBoardStore()
+  // );
+
+  const { makeTurn } = useTurnStore();
 
   // piece information
 
@@ -23,18 +26,48 @@ export const usePieceStore = defineStore("piece", () => {
 
   const hasMove = (squareIndex: number) => {
     return (
-      availableMoveArray.value.includes(squareIndex) ||
-      availableTakeArray.value.includes(squareIndex)
+      useBoardStore().availableMoveArray.includes(squareIndex) ||
+      useBoardStore().availableTakeArray.includes(squareIndex)
     );
   };
+
+  const isKing = (pieceType: vPieceType) => pieceType.toLowerCase() === "k";
 
   // piece collection
 
   const pieceCollection: vPieceCollection = reactive({});
 
+  const getPieceCollectionEntries = () => {
+    return Object.entries(pieceCollection) as [
+      key: [key: string, value: vPieceObject]
+    ];
+  };
+
+  const getPieceOnSquare = (squareIndex: number) => {
+    let pieceId = null;
+    getPieceCollectionEntries().some(([key, value]) => {
+      if (value.squareIndex === squareIndex) {
+        pieceId = key;
+        return true;
+      }
+    });
+    return pieceId ? pieceCollection[pieceId] : pieceId;
+  };
+
   let IDcounter = 0;
   const createID = (): number => {
     return ++IDcounter;
+  };
+
+  const activePieceId: Ref<number | null> = ref(null);
+  const activePiece = computed(() => {
+    return activePieceId.value ? pieceCollection[activePieceId.value] : null;
+  });
+
+  const unselectPiece = () => {
+    useBoardStore().availableMoveArray = [];
+    useBoardStore().availableTakeArray = [];
+    activePieceId.value = null;
   };
 
   const addPiece = ({
@@ -44,10 +77,14 @@ export const usePieceStore = defineStore("piece", () => {
     squareIndex: number;
     pieceType: vPieceType;
   }) => {
-    pieceCollection[createID()] = {
+    const newID = createID();
+    pieceCollection[newID] = {
       owner: getOwner(pieceType),
       type: pieceType,
       squareIndex,
+      moves: [],
+      takes: [],
+      id: newID,
     };
   };
 
@@ -61,6 +98,7 @@ export const usePieceStore = defineStore("piece", () => {
   };
 
   const movePiece = (to: number, from: number) => {
+    console.log(to, from);
     let toKey = -1;
     let fromKey = -1;
 
@@ -76,12 +114,16 @@ export const usePieceStore = defineStore("piece", () => {
       }
     });
 
+    makeTurn(pieceCollection[fromKey].owner, to, from);
+
     if (toKey && pieceCollection[toKey]) {
       removePiece(pieceCollection[toKey].squareIndex);
     }
     if (fromKey && pieceCollection[fromKey]) {
       pieceCollection[fromKey].squareIndex = to;
     }
+
+    unselectPiece();
   };
 
   const getPieceElement = (squareIndex: number): HTMLElement | null => {
@@ -105,14 +147,37 @@ export const usePieceStore = defineStore("piece", () => {
     );
   };
 
+  const checkingPieceSquareIndex = ref(0);
+
+  const getKingInCheck = computed(() => {
+    return false;
+    // let kingPlayer: vPlayerColour | null = null;
+    // Object.entries(pieceCollection).find(([key, value]) => {
+    //   const isKing = value.type.toLowerCase() === "k";
+    //   if (isKing && lastAvailableTakeArray.value.includes(value.squareIndex)) {
+    //     kingPlayer = getOwner(value.type);
+    //     return true;
+    //   }
+    // });
+    // return kingPlayer;
+  });
+
   return {
     getOwner,
     hasMove,
     pieceCollection,
+    getPieceCollectionEntries,
     addPiece,
     removePiece,
     movePiece,
     startCantMoveAnimation,
     getPieceElement,
+    getKingInCheck,
+    checkingPieceSquareIndex,
+    isKing,
+    activePieceId,
+    activePiece,
+    unselectPiece,
+    getPieceOnSquare,
   };
 });

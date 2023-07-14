@@ -7,26 +7,18 @@ export const useSquareStore = defineStore("square", () => {
 
   const boardStore = useBoardStore();
 
+  const { getPieceCollectionEntries } = usePieceStore();
   const { pieceCollection } = storeToRefs(usePieceStore());
 
   // square information
 
-  const getColour = (squareId: number): vSquareColour => {
-    // if the rank is even then start with black squares
-    if (Math.ceil(squareId / 8) % 2 === 0) {
-      if (squareId % 2 === 0) {
-        return "black";
-      } else {
-        return "white";
-      }
-    }
-    // if the rank is odd then start with white squares
-    if (Math.floor((squareId - 1) / 8) % 2 === 0) {
-      if (squareId % 2 === 0) {
-        return "white";
-      } else {
-        return "black";
-      }
+  const getColour = (squareIndex: number): vSquareColour => {
+    const { file, rank } = getRankFileObject(squareIndex);
+
+    if ((file + rank) % 2 === 0) {
+      return "black";
+    } else {
+      return "white";
     }
     throw Error("invalid colour");
   };
@@ -72,20 +64,27 @@ export const useSquareStore = defineStore("square", () => {
   };
 
   const hasPiece = (squareIndex: number) => {
-    return Object.entries(pieceCollection.value).some((entries) => {
+    return getPieceCollectionEntries().some((entries) => {
       return entries[1].squareIndex === squareIndex;
     });
   };
 
   const hasOpponentPiece = (squareIndex: number, owner: vPlayerColour) => {
-    return Object.entries(pieceCollection.value).some((entries) => {
+    let opponentPiece: vPieceType | null = null;
+
+    getPieceCollectionEntries().some((entries) => {
       const isOpponent =
         owner === "white"
           ? entries[1].type === entries[1].type.toLowerCase()
           : entries[1].type === entries[1].type.toUpperCase();
 
-      return entries[1].squareIndex === squareIndex && isOpponent;
+      if (entries[1].squareIndex === squareIndex && isOpponent) {
+        opponentPiece = entries[1].type;
+        return true;
+      }
     });
+
+    return opponentPiece;
   };
 
   const getCoordinates = (squareIndex: number) => {
@@ -98,6 +97,22 @@ export const useSquareStore = defineStore("square", () => {
     );
   };
 
+  const squareIsMoveable = (squareIndex: number) => {
+    return getPieceCollectionEntries().some(([_key, value]) => {
+      return value.moves.includes(squareIndex);
+    });
+  };
+
+  const squareIsTakeable = (squareIndex: number) => {
+    return getPieceCollectionEntries().some(([_key, value]) => {
+      return value.takes.includes(squareIndex);
+    });
+  };
+
+  const squareIsTakeableByPiece = (squareIndex: number, pieceId: number) => {
+    return pieceCollection.value[pieceId].takes.includes(squareIndex);
+  };
+
   return {
     getColour,
     getRankBySquareIndex,
@@ -107,5 +122,10 @@ export const useSquareStore = defineStore("square", () => {
     hasPiece,
     hasOpponentPiece,
     getSquareIndexByCoordinates,
+    getPieceCollectionEntries,
+    squareIsMoveable,
+    squareIsTakeable,
+    squareIsMoveableByPiece,
+    squareIsTakeableByPiece,
   };
 });
