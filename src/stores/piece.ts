@@ -98,7 +98,6 @@ export const usePieceStore = defineStore("piece", () => {
   };
 
   const movePiece = (to: number, from: number) => {
-    console.log(to, from);
     let toKey = -1;
     let fromKey = -1;
 
