@@ -45,8 +45,8 @@ const props = defineProps({
 const squareElement = ref(null) as Ref<HTMLElement | null>;
 
 const getPosition = () => {
-  const x = (getRankBySquareIndex(props.squareIndex) - 1) * 100;
-  const y = (8 - getFileBySquareIndex(props.squareIndex)) * 100;
+  const x = (getFileBySquareIndex(props.squareIndex) - 1) * 100;
+  const y = (8 - getRankBySquareIndex(props.squareIndex)) * 100;
   return `${x}% ${y}%`;
 };
 

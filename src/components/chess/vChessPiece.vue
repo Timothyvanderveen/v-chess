@@ -64,9 +64,7 @@ const {
 // element
 
 const pieceImage = computed(() => {
-  const fileName = `${
-    isWhite.value ? "w" : "b"
-  }${props.pieceType.toUpperCase()}`;
+  const fileName = `${isWhite ? "w" : "b"}${props.pieceType.toUpperCase()}`;
 
   return new URL(
     `../../assets/img/chesspieces/${fileName}.svg`,
@@ -75,8 +73,8 @@ const pieceImage = computed(() => {
 });
 
 const getPosition = computed(() => {
-  const x = (getRankBySquareIndex(props.squareIndex) - 1) * 100;
-  const y = (8 - getFileBySquareIndex(props.squareIndex)) * 100;
+  const x = (getFileBySquareIndex(props.squareIndex) - 1) * 100;
+  const y = (8 - getRankBySquareIndex(props.squareIndex)) * 100;
   return `${x}% ${y}%`;
 });
 
@@ -88,7 +86,9 @@ const thisOwner = computed(() => {
 
 const chessPiece: Ref<HTMLElement | null> = ref(null);
 
-const isWhite = computed(() => getOwner(props.pieceType) === "white");
+const isWhite = getOwner(props.pieceType) === "white";
+
+const isPawn = props.pieceType.toLowerCase() === "p";
 
 // moves
 
@@ -103,15 +103,17 @@ watch(
 
 // TODO move logic
 const setAvailableMoves = () => {
-  // if (props.pieceType.toLowerCase() === "p") {
-  //   setAvailablePawnMoves();
-  //   setAvailablePawnTakes();
-  // }
+  if (props.pieceType.toLowerCase() === "p") {
+    calculateMovesAndTakes([pawnInstructionsObject]);
+  }
   if (props.pieceType.toLowerCase() === "r") {
     calculateMovesAndTakes([cardinalInstructionsObject]);
   }
   if (props.pieceType.toLowerCase() === "k") {
-    // movesTakesObject = getMovesAndTakes(cardinalInstructionsObject, 1);
+    calculateMovesAndTakes(
+      [cardinalInstructionsObject, diagonalInstructionsObject],
+      1
+    );
   }
   if (props.pieceType.toLowerCase() === "q") {
     calculateMovesAndTakes([
@@ -137,25 +139,25 @@ const setAvailableMoves = () => {
 
 const cardinalInstructionsObject: InstructionsObject = {
   up: {
-    availableSteps: ({ file, rank: _rank }: RankFileObject) => 8 - file,
+    availableSteps: ({ file: _file, rank }: RankFileObject) => 8 - rank,
     upDownCounter: 1,
     leftRightCounter: 0,
     target: "file",
   },
   down: {
-    availableSteps: ({ file, rank: _rank }: RankFileObject) => file - 1,
+    availableSteps: ({ file: _file, rank }: RankFileObject) => rank - 1,
     upDownCounter: -1,
     leftRightCounter: 0,
     target: "file",
   },
   right: {
-    availableSteps: ({ file: _file, rank }: RankFileObject) => 8 - rank,
+    availableSteps: ({ file, rank: _rank }: RankFileObject) => 8 - file,
     upDownCounter: 0,
     leftRightCounter: 1,
     target: "rank",
   },
   left: {
-    availableSteps: ({ file: _file, rank }: RankFileObject) => rank - 1,
+    availableSteps: ({ file, rank: _rank }: RankFileObject) => file - 1,
     upDownCounter: 0,
     leftRightCounter: -1,
     target: "rank",
@@ -164,22 +166,22 @@ const cardinalInstructionsObject: InstructionsObject = {
 
 const diagonalInstructionsObject: InstructionsObject = {
   topleft: {
-    availableSteps: ({ file, rank: rank }: RankFileObject) =>
-      Math.min(8 - file, rank - 1),
+    availableSteps: ({ file, rank }: RankFileObject) =>
+      Math.min(8 - rank, file - 1),
     upDownCounter: 1,
     leftRightCounter: -1,
     target: "a8-h1",
   },
   topright: {
-    availableSteps: ({ file, rank: rank }: RankFileObject) =>
+    availableSteps: ({ file, rank }: RankFileObject) =>
       Math.min(8 - file, 8 - rank),
     upDownCounter: 1,
     leftRightCounter: 1,
     target: "a1-h8",
   },
   bottomright: {
-    availableSteps: ({ file: file, rank }: RankFileObject) =>
-      Math.min(file - 1, 8 - rank),
+    availableSteps: ({ file, rank }: RankFileObject) =>
+      Math.min(rank - 1, 8 - file),
     upDownCounter: -1,
     leftRightCounter: 1,
     target: "a8-h1",
@@ -193,51 +195,73 @@ const diagonalInstructionsObject: InstructionsObject = {
   },
 };
 
+const pawnInstructionsObject: InstructionsObject = {
+  moveupdown: {
+    availableSteps: ({ rank, file: _file }) =>
+      rank === 2 || rank === 7 ? 2 : 1,
+    upDownCounter: isWhite ? 1 : -1,
+    leftRightCounter: 0,
+    target: "file",
+  },
+  takeleft: {
+    availableSteps: (_fileRankObject) => 1,
+    upDownCounter: isWhite ? 1 : -1,
+    leftRightCounter: -1,
+    target: isWhite ? "a1-h8" : "a8-h1",
+  },
+  takeright: {
+    availableSteps: (_fileRankObject) => 1,
+    upDownCounter: isWhite ? 1 : -1,
+    leftRightCounter: 1,
+    target: isWhite ? "a1-h8" : "a8-h1",
+  },
+};
+
 const knightInstructionsObject: InstructionsObject = {
   upright: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: 2,
     leftRightCounter: 1,
     target: "upright",
   },
   rightup: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: 1,
     leftRightCounter: 2,
     target: "rightup",
   },
   rightdown: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: -1,
-    leftRightCounter: 2,
+    leftRightCounter: -2,
     target: "rightdown",
   },
   downright: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: -2,
     leftRightCounter: 1,
     target: "downright",
   },
   downleft: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: -2,
     leftRightCounter: -1,
     target: "downleft",
   },
   leftdown: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: -1,
     leftRightCounter: -2,
     target: "leftdown",
   },
   leftup: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: 1,
     leftRightCounter: -2,
     target: "leftup",
   },
   upleft: {
-    availableSteps: ({ file: _file, rank: _rank }: RankFileObject) => 1,
+    availableSteps: (_fileRankObject) => 1,
     upDownCounter: 2,
     leftRightCounter: -1,
     target: "upleft",
@@ -281,7 +305,11 @@ const calculateMovesAndTakes = (
       let leftRightCounter = 0;
 
       Array.from(Array(availableSteps).keys()).some((counter) => {
-        if (steps && counter === steps) {
+        if (
+          steps &&
+          counter === steps &&
+          instructionsObjectArray.includes(instructionsObject)
+        ) {
           return true;
         }
 
@@ -289,8 +317,8 @@ const calculateMovesAndTakes = (
         leftRightCounter += instructionsObject[direction].leftRightCounter;
 
         const newRankFile = {
-          rank: oldRankFile.rank + leftRightCounter,
-          file: oldRankFile.file + upDownCounter,
+          rank: oldRankFile.rank + upDownCounter,
+          file: oldRankFile.file + leftRightCounter,
         };
 
         if (
@@ -306,10 +334,9 @@ const calculateMovesAndTakes = (
         });
 
         const foundPiece = getPieceOnSquare(squareIndex);
-
         if (foundPiece) {
           if (hasOpponentPiece(squareIndex, thisOwner.value)) {
-            if (!preventCheckOnly) {
+            if (!preventCheckOnly && (!isPawn || target !== "file")) {
               moveTakeCollection.push({
                 target,
                 squareIndex,
@@ -334,7 +361,10 @@ const calculateMovesAndTakes = (
           return true;
         }
 
-        if (!preventCheckOnly) {
+        if (
+          !preventCheckOnly &&
+          (!isPawn || !["a1-h8", "a8-h1"].includes(target))
+        ) {
           moveTakeCollection.push({ target, squareIndex, action: "move" });
         }
       });
@@ -356,54 +386,6 @@ const calculateMovesAndTakes = (
     }
   });
 };
-
-// const setAvailablePawnMoves = () => {
-//   const { file, rank } = getRankFileObject(props.squareIndex);
-
-//   const squareIndex = getSquareIndexByCoordinates({
-//     file: (file + (isWhite.value ? 1 : -1)) as vSquareFileNumber,
-//     rank: rank,
-//   });
-
-//   if (hasPiece(squareIndex)) {
-//     return;
-//   }
-
-//   availableMoveArray.value.push(squareIndex);
-
-//   if (
-//     (file === 2 && thisOwner.value === "white") ||
-//     (file === 7 && thisOwner.value === "black")
-//   ) {
-//     const squareIndex = getSquareIndexByCoordinates({
-//       file: (file + (isWhite.value ? 2 : -2)) as vSquareFileNumber,
-//       rank: rank,
-//     });
-
-//     availableMoveArray.value.push(squareIndex);
-//   }
-// };
-
-// const setAvailablePawnTakes = () => {
-//   const { file, rank } = getRankFileObject(props.squareIndex);
-//   const rankModifiers = [];
-
-//   if (rank > 1) {
-//     rankModifiers.push(rank - 1);
-//   }
-//   if (rank < 8) {
-//     rankModifiers.push(rank + 1);
-//   }
-
-//   rankModifiers.forEach((rankModifier) => {
-//     const squareIndex = getSquareIndexByCoordinates({
-//       file: (file + (isWhite.value ? 1 : -1)) as vSquareFileNumber,
-//       rank: rankModifier as vSquareFileNumber,
-//     });
-
-//     pushTake(squareIndex);
-//   });
-// };
 </script>
 
 <style lang="scss" scoped>

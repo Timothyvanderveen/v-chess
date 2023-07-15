@@ -24,14 +24,14 @@ export const useSquareStore = defineStore("square", () => {
   };
 
   const getFileBySquareIndex = (squareIndex: number): vSquareFileNumber => {
-    const file: number | null =
-      boardStore.fileArray[Math.ceil(squareIndex / 8) - 1] ?? null;
+    const file: number | null = boardStore.rankArray[(squareIndex - 1) % 8];
     if (file === null) throw Error(`invalid file: ${squareIndex}`);
     return file as vSquareFileNumber;
   };
 
   const getRankBySquareIndex = (squareIndex: number): vSquareRankNumber => {
-    const rank: number | null = boardStore.rankArray[(squareIndex - 1) % 8];
+    const rank: number | null =
+      boardStore.fileArray[Math.ceil(squareIndex / 8) - 1] ?? null;
     if (rank === null) throw Error(`invalid rank: ${squareIndex}`);
     return rank as vSquareRankNumber;
   };
