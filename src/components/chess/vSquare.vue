@@ -11,7 +11,7 @@
     :style="{ translate: getPosition() }"
     :data-square-index="props.squareIndex"
   >
-    {{ squareIndex }}
+    <!-- {{ squareIndex }} -->
   </div>
 </template>
 
