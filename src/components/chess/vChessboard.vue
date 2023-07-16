@@ -42,7 +42,7 @@ import vChessPiece from "./vChessPiece.vue";
 import { useSquareStore } from "@/stores/square";
 import { useBoardStore } from "@/stores/board";
 import { onMounted, ref, type Ref } from "vue";
-import { usePieceStore } from "@/stores/piece";
+import { usePieceStore } from "@/stores/piece/index";
 import { storeToRefs } from "pinia";
 import { useTurnStore } from "@/stores/turn";
 
@@ -58,7 +58,7 @@ const { populateBoardState, squareArray, rankArray, fileLetterArray } =
   useBoardStore();
 const { availableMoveArray, availableTakeArray } = storeToRefs(useBoardStore());
 
-const { currentPlayerTurn } = storeToRefs(useTurnStore());
+// const { currentPlayerTurn } = storeToRefs(useTurnStore());
 
 const { movePiece, startCantMoveAnimation, getOwner, unselectPiece } =
   usePieceStore();
@@ -100,8 +100,8 @@ onMounted(() => {
       };
 
       const noPieceSelected = !activePiece.value;
-      const isCurrentPlayerPiece =
-        clickedPieceObject.owner === currentPlayerTurn.value;
+      const isCurrentPlayerPiece = true; // DEBUG check for player turn
+      // clickedPieceObject.owner === currentPlayerTurn.value;
       const selectedOwnPiece =
         clickedPieceObject.owner === activePiece.value?.owner;
 

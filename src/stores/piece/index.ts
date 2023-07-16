@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
-import { useBoardStore } from "./board";
+import { useBoardStore } from "../board";
 import { computed, reactive, ref, type Ref } from "vue";
-import { useTurnStore } from "./turn";
+import { useTurnStore } from "../turn";
 
 export const usePieceStore = defineStore("piece", () => {
   // stores
@@ -30,6 +30,9 @@ export const usePieceStore = defineStore("piece", () => {
       useBoardStore().availableTakeArray.includes(squareIndex)
     );
   };
+
+  const isPieceType = (currentPieceType: vPieceType, typeToCheck: vPieceType) =>
+    currentPieceType.toLowerCase() === typeToCheck.toLowerCase();
 
   const isKing = (pieceType: vPieceType) => pieceType.toLowerCase() === "k";
 
@@ -104,12 +107,10 @@ export const usePieceStore = defineStore("piece", () => {
     Object.entries(pieceCollection).forEach(function ([key, value]) {
       if (value.squareIndex === from) {
         fromKey = parseInt(key);
-        // pieceCollection[parseInt(key) as number].squareIndex = to;
       }
 
       if (value.squareIndex === to) {
         toKey = parseInt(key);
-        // removePiece(value.squareIndex);
       }
     });
 
@@ -178,5 +179,6 @@ export const usePieceStore = defineStore("piece", () => {
     activePiece,
     unselectPiece,
     getPieceOnSquare,
+    isPieceType,
   };
 });

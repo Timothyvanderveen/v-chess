@@ -38,7 +38,7 @@ type AvailableMove = {
 };
 
 interface MoveTakeObject {
-  target: string;
+  line: string;
   squareIndex: number;
   action: "take" | "move";
 }
@@ -58,9 +58,9 @@ interface ChessTurn {
 interface InstructionsObject {
   [key: string]: {
     availableSteps: (RankFileObject) => number;
-    upDownCounter: number;
-    leftRightCounter: number;
-    target: string;
+    upDownCounter: () => number;
+    leftRightCounter: () => number;
+    line: string;
   };
 }
 

@@ -13,6 +13,11 @@ export const useBoardStore = defineStore("board", () => {
   const fileArray = Array.from(Array(8).keys()).map((e) => ++e);
   const fileLetterArray = "abcdefgh".split("");
 
+  // legality checks
+
+  const rankFileExceedsBoardBounds = ({ rank, file }: RankFileObject) =>
+    Math.max(file, rank) > 8 || Math.min(file, rank) < 1;
+
   // board state
 
   const boardState: Ref<vBoardState> = ref([]);
@@ -48,5 +53,6 @@ export const useBoardStore = defineStore("board", () => {
     availableTakeArray,
     lastAvailableMoveArray,
     lastAvailableTakeArray,
+    rankFileExceedsBoardBounds,
   };
 });
