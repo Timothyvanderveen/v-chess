@@ -467,14 +467,6 @@ export default class MoveLogic {
         const takingOpponentSquare =
           value.encounteredPieces.own.includes(squareIndex);
 
-        if (squareIndex === 52) {
-          console.log(
-            crossingMoveableSquare,
-            crossingTakeableSquare,
-            takingOpponentSquare
-          );
-        }
-
         return (
           crossingMoveableSquare ||
           crossingTakeableSquare ||
