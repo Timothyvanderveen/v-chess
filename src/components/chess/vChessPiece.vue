@@ -25,8 +25,7 @@ import { useBoardStore } from "@/stores/board";
 import { usePieceStore } from "@/stores/piece/index";
 import { useSquareStore } from "@/stores/square";
 import { storeToRefs } from "pinia";
-import { type PropType, computed, ref, type Ref, watch } from "vue";
-import MoveLogic from "@/stores/piece/classes/MoveLogic";
+import { type PropType, computed, ref, type Ref, watch, onMounted } from "vue";
 
 // props
 
@@ -47,11 +46,14 @@ const props = defineProps({
 
 // store
 
-const { getOwner } = usePieceStore();
-const { activePieceId } = storeToRefs(usePieceStore());
+const { getOwner, createMoveLogic } = usePieceStore();
+const { activePieceId, affectedPiecesByMoveArray } = storeToRefs(
+  usePieceStore()
+);
 
 const boardStore = useBoardStore();
-const { hoveringSquare } = storeToRefs(boardStore);
+const { hoveringSquare, availableMoveArray, availableTakeArray } =
+  storeToRefs(boardStore);
 
 const { getRankBySquareIndex, getFileBySquareIndex } = useSquareStore();
 
@@ -83,6 +85,8 @@ watch(
   (to) => {
     if (to === props.id) {
       moveLogic.setAvailableMoves();
+      availableMoveArray.value = moveLogic.getMoveArray();
+      availableTakeArray.value = moveLogic.getTakeArray();
     }
   }
 );
@@ -91,14 +95,25 @@ watch(
   () => props.squareIndex,
   (to) => {
     moveLogic.squareIndex = to;
+    moveLogic.setAvailableMoves();
   }
 );
 
-const moveLogic = new MoveLogic({
-  playerColour: getOwner(props.pieceType),
-  pieceType: props.pieceType,
-  squareIndex: props.squareIndex,
+watch(
+  () => affectedPiecesByMoveArray.value,
+  (to) => {
+    console.log("y");
+    if (to.includes(props.id)) {
+      moveLogic.setAvailableMoves(true);
+    }
+  }
+);
+
+onMounted(() => {
+  moveLogic.setAvailableMoves();
 });
+
+const moveLogic = createMoveLogic(props.id);
 </script>
 
 <style lang="scss" scoped>

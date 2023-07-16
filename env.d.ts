@@ -91,4 +91,8 @@ interface vPieceObject {
   moves: number[];
   takes: number[];
   id: number;
+  encounteredPieces: {
+    own: number[];
+    opponent: number[];
+  };
 }

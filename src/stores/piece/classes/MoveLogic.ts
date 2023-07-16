@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import { useSquareStore } from "@/stores/square";
 
 export default class MoveLogic {
+  pieceId: number;
   playerColour: "white" | "black";
   pieceType;
   squareIndex;
@@ -20,14 +21,17 @@ export default class MoveLogic {
   squareStoreRefs;
 
   constructor({
+    pieceId,
     playerColour,
     pieceType,
     squareIndex,
   }: {
+    pieceId: number;
     playerColour: vPlayerColour;
     pieceType: vPieceType;
     squareIndex: number;
   }) {
+    this.pieceId = pieceId;
     this.playerColour = playerColour;
     this.pieceType = pieceType;
     this.squareIndex = squareIndex;
@@ -49,13 +53,16 @@ export default class MoveLogic {
 
   isWhite = () => this.playerColour === "white";
 
-  getMoveArray = () => this.boardStoreRefs.availableMoveArray.value;
-  getTakeArray = () => this.boardStoreRefs.availableTakeArray.value;
+  getPieceFromCollection = () =>
+    this.pieceStoreRefs.pieceCollection.value[this.pieceId];
+
+  getMoveArray = () => this.getPieceFromCollection().moves ?? [];
+  getTakeArray = () => this.getPieceFromCollection().takes ?? [];
 
   setMoveArray = (newValue: number[]) =>
-    (this.boardStoreRefs.availableMoveArray.value = newValue);
+    (this.pieceStoreRefs.pieceCollection.value[this.pieceId].moves = newValue);
   setTakeArray = (newValue: number[]) =>
-    (this.boardStoreRefs.availableTakeArray.value = newValue);
+    (this.pieceStoreRefs.pieceCollection.value[this.pieceId].takes = newValue);
 
   // instructions
 
@@ -192,7 +199,10 @@ export default class MoveLogic {
     },
   };
 
-  setAvailableMoves = () => {
+  onlyUpdateAvailableMoves = false;
+
+  setAvailableMoves = (onlyUpdate = false) => {
+    this.onlyUpdateAvailableMoves = onlyUpdate;
     const instructionKeys: Array<keyof typeof this.instructions> = [];
     let steps: number | null = null;
 
@@ -223,7 +233,9 @@ export default class MoveLogic {
     this.calculateMovesAndTakes(instructionKeys, steps);
 
     if (this.getMoveArray().length === 0 && this.getTakeArray().length === 0) {
-      this.pieceStore.startCantMoveAnimation(this.squareIndex);
+      if (this.pieceStoreRefs.activePieceId.value === this.pieceId) {
+        this.pieceStore.startCantMoveAnimation(this.squareIndex);
+      }
       this.pieceStoreRefs.activePieceId.value = 0;
     }
   };
@@ -255,6 +267,8 @@ export default class MoveLogic {
     this.setTakeArray([]);
     this.moveTakeCollection = [];
     this.encounteredPieceLines = { king: null, attacker: null };
+    this.pieceStoreRefs.pieceCollection.value[this.pieceId].encounteredPieces =
+      { own: [], opponent: [] };
   };
 
   calculateMovesAndTakes = (
@@ -348,6 +362,8 @@ export default class MoveLogic {
       );
 
       if (hasOpponentPiece) {
+        this.encounterPiece("opponent", newSquareIndex, preventCheckOnly);
+
         if (!preventCheckOnly && isNotPawnOrTakingOnFileLine) {
           this.moveTakeCollection.push({
             line: currentLine,
@@ -361,13 +377,44 @@ export default class MoveLogic {
           foundPiece.type,
           currentLine
         );
-      } else if (foundPieceIsKing) {
+
+        return true;
+      }
+
+      if (foundPieceIsKing) {
         this.encounteredPieceLines.king = currentLine;
       }
+
+      this.encounterPiece("own", newSquareIndex, preventCheckOnly);
+
+      return true;
+    } else if (
+      this.isPieceType("p") &&
+      currentInstructionKey === "pawn" &&
+      (currentLine === "a1-h8" || currentLine === "a8-h1")
+    ) {
+      this.moveTakeCollection.push({
+        line: currentLine,
+        squareIndex: newSquareIndex,
+        action: "take",
+      });
+
       return true;
     }
 
     return false;
+  };
+
+  encounterPiece = (
+    type: "own" | "opponent",
+    squareIndex: number,
+    preventCheckOnly: boolean
+  ) => {
+    if (!preventCheckOnly) {
+      this.pieceStoreRefs.pieceCollection.value[this.pieceId].encounteredPieces[
+        type
+      ].push(squareIndex);
+    }
   };
 
   checkForChecks = (
@@ -408,6 +455,34 @@ export default class MoveLogic {
     }
   };
 
+  crossingDangerousSquare = (squareIndex: number) => {
+    return this.pieceStore
+      .getPieceCollectionEntries()
+      .filter(([_key, value]) => value.owner !== this.playerColour)
+      .some(([_key, value]) => {
+        const crossingMoveableSquare =
+          value.moves.includes(squareIndex) &&
+          !this.pieceStore.isPieceType(value.type, "p");
+        const crossingTakeableSquare = value.takes.includes(squareIndex);
+        const takingOpponentSquare =
+          value.encounteredPieces.own.includes(squareIndex);
+
+        if (squareIndex === 52) {
+          console.log(
+            crossingMoveableSquare,
+            crossingTakeableSquare,
+            takingOpponentSquare
+          );
+        }
+
+        return (
+          crossingMoveableSquare ||
+          crossingTakeableSquare ||
+          takingOpponentSquare
+        );
+      });
+  };
+
   validateMoveAndTakes = () => {
     const hasNotEncounteredKing = !this.encounteredPieceLines.king;
     const attackerLineIsNotKingLine =
@@ -416,6 +491,13 @@ export default class MoveLogic {
     this.moveTakeCollection.forEach((moveTakeObject) => {
       const attackerOnLineIsTakeable =
         this.encounteredPieceLines.attacker === moveTakeObject.line;
+
+      if (
+        this.isPieceType("k") &&
+        this.crossingDangerousSquare(moveTakeObject.squareIndex)
+      ) {
+        return;
+      }
 
       if (
         hasNotEncounteredKing ||

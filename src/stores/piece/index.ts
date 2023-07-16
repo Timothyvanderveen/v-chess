@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { useBoardStore } from "../board";
 import { computed, reactive, ref, type Ref } from "vue";
 import { useTurnStore } from "../turn";
+import MoveLogic from "./classes/MoveLogic";
 
 export const usePieceStore = defineStore("piece", () => {
   // stores
@@ -90,6 +91,10 @@ export const usePieceStore = defineStore("piece", () => {
       moves: [],
       takes: [],
       id: newID,
+      encounteredPieces: {
+        own: [],
+        opponent: [],
+      },
     };
   };
 
@@ -117,6 +122,28 @@ export const usePieceStore = defineStore("piece", () => {
     }
 
     unselectPiece();
+
+    getPieceCollectionEntries().forEach(([_key, value]) => {
+      const movesAffected =
+        value.moves.includes(from) || value.moves.includes(to);
+      const takesAffected =
+        value.takes.includes(from) || value.takes.includes(to);
+      const ownPiecesAffected =
+        value.encounteredPieces.own.includes(to) ||
+        value.encounteredPieces.own.includes(from);
+      const opponentPiecesAffected =
+        value.encounteredPieces.opponent.includes(to) ||
+        value.encounteredPieces.opponent.includes(from);
+
+      if (
+        movesAffected ||
+        takesAffected ||
+        ownPiecesAffected ||
+        opponentPiecesAffected
+      ) {
+        createMoveLogic(value.id).setAvailableMoves();
+      }
+    });
   };
 
   const getPieceElement = (squareIndex: number): HTMLElement | null => {
@@ -197,7 +224,7 @@ export const usePieceStore = defineStore("piece", () => {
     );
   };
 
-  const checkingPieceSquareIndex = ref(0);
+  const affectedPiecesByMoveArray: Ref<number[]> = ref([]);
 
   const getKingInCheck = computed(() => {
     return false;
@@ -212,6 +239,15 @@ export const usePieceStore = defineStore("piece", () => {
     // return kingPlayer;
   });
 
+  const createMoveLogic = (id: keyof typeof pieceCollection) => {
+    return new MoveLogic({
+      pieceId: pieceCollection[id].id,
+      playerColour: getOwner(pieceCollection[id].type),
+      pieceType: pieceCollection[id].type,
+      squareIndex: pieceCollection[id].squareIndex,
+    });
+  };
+
   return {
     getOwner,
     hasMove,
@@ -224,7 +260,7 @@ export const usePieceStore = defineStore("piece", () => {
     startDeathAnimation,
     getPieceElement,
     getKingInCheck,
-    checkingPieceSquareIndex,
+    affectedPiecesByMoveArray,
     isKing,
     activePieceId,
     activePiece,
@@ -233,5 +269,6 @@ export const usePieceStore = defineStore("piece", () => {
     pieceIdsToDelete,
     isPieceType,
     checkForDeletion,
+    createMoveLogic,
   };
 });

@@ -6,11 +6,13 @@
       [`v-square__colour--${props.colour}`]: true,
       hovering: isHovering,
       moveable: thisIsMoveTarget,
-      takeable: thisIsTakeTarget,
+      takeable: thisIsTakeTarget && hasPiece(squareIndex),
     }"
     :style="{ translate: getPosition() }"
     :data-square-index="props.squareIndex"
-  />
+  >
+    {{ squareIndex }}
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -24,7 +26,8 @@ const { hoveringSquare, availableMoveArray, availableTakeArray } = storeToRefs(
   useBoardStore()
 );
 
-const { getFileBySquareIndex, getRankBySquareIndex } = useSquareStore();
+const { getFileBySquareIndex, getRankBySquareIndex, hasPiece } =
+  useSquareStore();
 
 // props
 
