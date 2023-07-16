@@ -62,6 +62,8 @@ export const usePieceStore = defineStore("piece", () => {
     return ++IDcounter;
   };
 
+  const pieceIdsToDelete: Ref<number[]> = ref([]);
+
   const activePieceId: Ref<number | null> = ref(null);
   const activePiece = computed(() => {
     return activePieceId.value ? pieceCollection[activePieceId.value] : null;
@@ -89,15 +91,6 @@ export const usePieceStore = defineStore("piece", () => {
       takes: [],
       id: newID,
     };
-  };
-
-  const removePiece = (squareIndex: number) => {
-    Object.entries(pieceCollection).some(([key, value]) => {
-      if (value.squareIndex === squareIndex) {
-        delete pieceCollection[parseInt(key) as number];
-        return true;
-      }
-    });
   };
 
   const movePiece = (to: number, from: number) => {
@@ -147,6 +140,63 @@ export const usePieceStore = defineStore("piece", () => {
     );
   };
 
+  // removing pieces
+
+  const removePiece = (squareIndex: number) => {
+    Object.entries(pieceCollection).some(([key, value]) => {
+      if (value.squareIndex === squareIndex) {
+        pieceIdsToDelete.value.push(parseInt(key) as number);
+        startDeathAnimation(squareIndex);
+        return true;
+      }
+    });
+  };
+
+  const startDeathAnimation = (squareIndex: number) => {
+    const pieceElement = getPieceElement(squareIndex);
+    if (!pieceElement) return;
+    const randomSideNumber = Math.floor(Math.random() * 2);
+    const xModifier = randomSideNumber === 0 ? "40%" : "-40%";
+    const degModifier = randomSideNumber === 0 ? "20deg" : "-20deg";
+    pieceElement.classList.add("deleting");
+    pieceElement
+      .animate(
+        [
+          { opacity: 1 },
+          {
+            transform: `translate(${xModifier}, -40%) rotate(${degModifier})`,
+            opacity: 0,
+            zIndex: 1,
+          },
+
+          { opacity: 0 },
+        ],
+        {
+          duration: 300,
+        }
+      )
+      .addEventListener("finish", () => {
+        checkForDeletion(pieceElement);
+      });
+  };
+
+  const checkForDeletion = (pieceElement: HTMLElement) => {
+    if (!pieceElement.dataset.id) {
+      return;
+    }
+    const id = parseInt(pieceElement.dataset.id);
+
+    pieceIdsToDelete.value = pieceIdsToDelete.value.filter(
+      (pieceIdToDelete) => {
+        if (pieceIdToDelete === id) {
+          delete pieceCollection[id];
+          return false;
+        }
+        return true;
+      }
+    );
+  };
+
   const checkingPieceSquareIndex = ref(0);
 
   const getKingInCheck = computed(() => {
@@ -171,6 +221,7 @@ export const usePieceStore = defineStore("piece", () => {
     removePiece,
     movePiece,
     startCantMoveAnimation,
+    startDeathAnimation,
     getPieceElement,
     getKingInCheck,
     checkingPieceSquareIndex,
@@ -179,6 +230,8 @@ export const usePieceStore = defineStore("piece", () => {
     activePiece,
     unselectPiece,
     getPieceOnSquare,
+    pieceIdsToDelete,
     isPieceType,
+    checkForDeletion,
   };
 });

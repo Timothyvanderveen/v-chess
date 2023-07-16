@@ -116,10 +116,15 @@ const moveLogic = new MoveLogic({
   }
 
   .v-piece {
-    width: 80%;
+    width: 100%;
+    padding: 10%;
     user-select: none;
     cursor: pointer;
     transition: scale 0.2s ease-in-out;
+
+    &.deleting {
+      pointer-events: none;
+    }
   }
 
   &.hovering .v-piece {

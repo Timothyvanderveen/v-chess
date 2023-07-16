@@ -12,7 +12,7 @@ export const useFenStore = defineStore("fen", () => {
 
   // fen parsing
 
-  // const startingFen = "5k2/8/5n2/8/4N3/8/5K2/8 w - - 0 1";
+  // const startingFen = "8/3k4/5q2/8/5Q2/8/3K4/8 w - - 0 1";
   const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
   const parseFenToBoardState = (
