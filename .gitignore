@@ -8,8 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-.pnp.loader.mjs
-.pnp.cjs
 .DS_Store
 dist
 dist-ssr
