@@ -16,16 +16,17 @@
       draggable="false"
       :data-piece-type="props.pieceType"
       :data-id="props.id"
+      alt="#TODO"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useBoardStore } from "@/stores/board";
-import { usePieceStore } from "@/stores/piece/index";
-import { useSquareStore } from "@/stores/square";
-import { storeToRefs } from "pinia";
-import { type PropType, computed, ref, type Ref, watch, onMounted } from "vue";
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, type PropType, type Ref, ref, watch } from 'vue';
+import { useBoardStore } from '~/stores/board';
+import { usePieceStore } from '~/stores/piece';
+import { useSquareStore } from '~/stores/square';
 
 // props
 
@@ -47,13 +48,10 @@ const props = defineProps({
 // store
 
 const { getOwner, createMoveLogic } = usePieceStore();
-const { activePieceId, affectedPiecesByMoveArray } = storeToRefs(
-  usePieceStore()
-);
+const { activePieceId, affectedPiecesByMoveArray } = storeToRefs(usePieceStore());
 
 const boardStore = useBoardStore();
-const { hoveringSquare, availableMoveArray, availableTakeArray } =
-  storeToRefs(boardStore);
+const { hoveringSquare, availableMoveArray, availableTakeArray } = storeToRefs(boardStore);
 
 const { getRankBySquareIndex, getFileBySquareIndex } = useSquareStore();
 
@@ -63,13 +61,10 @@ const chessPiece: Ref<HTMLElement | null> = ref(null);
 
 const pieceImage = computed(() => {
   const fileName = `${
-    getOwner(props.pieceType) === "white" ? "w" : "b"
+    getOwner(props.pieceType) === 'white' ? 'w' : 'b'
   }${props.pieceType.toUpperCase()}`;
 
-  return new URL(
-    `../../assets/img/chesspieces/${fileName}.svg`,
-    import.meta.url
-  ).href;
+  return new URL(`../../assets/img/chesspieces/${fileName}.svg`, import.meta.url).href;
 });
 
 const getPosition = computed(() => {
@@ -88,7 +83,7 @@ watch(
       availableMoveArray.value = moveLogic.getMoveArray();
       availableTakeArray.value = moveLogic.getTakeArray();
     }
-  }
+  },
 );
 
 watch(
@@ -96,17 +91,17 @@ watch(
   (to) => {
     moveLogic.squareIndex = to;
     moveLogic.setAvailableMoves();
-  }
+  },
 );
 
 watch(
   () => affectedPiecesByMoveArray.value,
   (to) => {
-    console.log("y");
+    console.log('y');
     if (to.includes(props.id)) {
       moveLogic.setAvailableMoves(true);
     }
-  }
+  },
 );
 
 onMounted(() => {

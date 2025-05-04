@@ -16,18 +16,15 @@
 </template>
 
 <script setup lang="ts">
-import { useBoardStore } from "@/stores/board";
-import { useSquareStore } from "@/stores/square";
-import { storeToRefs } from "pinia";
-import { ref, type PropType, type Ref, computed, onMounted } from "vue";
+import { useBoardStore } from '~/stores/board';
+import { useSquareStore } from '~/stores/square';
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, type PropType, ref, type Ref } from 'vue';
 
 // stores
-const { hoveringSquare, availableMoveArray, availableTakeArray } = storeToRefs(
-  useBoardStore()
-);
+const { hoveringSquare, availableMoveArray, availableTakeArray } = storeToRefs(useBoardStore());
 
-const { getFileBySquareIndex, getRankBySquareIndex, hasPiece } =
-  useSquareStore();
+const { getFileBySquareIndex, getRankBySquareIndex, hasPiece } = useSquareStore();
 
 // props
 
@@ -39,7 +36,7 @@ const props = defineProps({
   colour: {
     type: String as PropType<vSquareColour>,
     required: true,
-    validator: (prop: string) => ["black", "white"].includes(prop),
+    validator: (prop: string) => ['black', 'white'].includes(prop),
   },
 });
 
@@ -56,10 +53,7 @@ const getPosition = () => {
 // square information
 
 const isHovering = computed(() => {
-  if (props.squareIndex === hoveringSquare.value) {
-    return true;
-  }
-  return false;
+  return props.squareIndex === hoveringSquare.value;
 });
 
 const thisIsMoveTarget = computed(() => {
@@ -72,15 +66,12 @@ const thisIsTakeTarget = computed(() => {
 // events
 
 onMounted(() => {
-  squareElement.value?.addEventListener("mouseover", () => {
+  squareElement.value?.addEventListener('mouseover', () => {
     if (thisIsMoveTarget.value) {
       hoveringSquare.value = props.squareIndex;
     }
   });
-  squareElement.value?.addEventListener(
-    "mouseleave",
-    () => (hoveringSquare.value = 0)
-  );
+  squareElement.value?.addEventListener('mouseleave', () => (hoveringSquare.value = 0));
 });
 </script>
 
@@ -98,7 +89,7 @@ onMounted(() => {
   }
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     background-color: transparent;
     /* width: 100%; */
@@ -111,14 +102,17 @@ onMounted(() => {
 
   &.moveable {
     cursor: pointer;
+
     &::after {
       background-color: #262626;
       inset: 30%;
       opacity: 0.2;
     }
   }
+
   &.takeable {
     cursor: pointer;
+
     &::after {
       inset: 0;
       opacity: 0.2;
@@ -126,9 +120,11 @@ onMounted(() => {
     }
   }
 }
+
 .v-square__colour--white {
   background-color: #ababab;
 }
+
 .v-square__colour--black {
   background-color: #898989;
 }

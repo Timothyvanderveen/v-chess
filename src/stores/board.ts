@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
-import { useFenStore } from "./fen";
-import { type Ref, ref } from "vue";
+import { defineStore } from 'pinia';
+import { useFenStore } from './fen';
+import { type Ref, ref } from 'vue';
 
-export const useBoardStore = defineStore("board", () => {
+export const useBoardStore = defineStore('board', () => {
   // stores
   const { parseFenToBoardState } = useFenStore();
 
@@ -11,7 +11,7 @@ export const useBoardStore = defineStore("board", () => {
   const squareArray = Array.from(Array(64).keys()).map((e) => ++e);
   const rankArray = Array.from(Array(8).keys()).map((e) => ++e);
   const fileArray = Array.from(Array(8).keys()).map((e) => ++e);
-  const fileLetterArray = "abcdefgh".split("");
+  const fileLetterArray = 'abcdefgh'.split('');
 
   // legality checks
 

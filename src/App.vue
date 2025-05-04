@@ -1,11 +1,11 @@
 <template>
   <div class="chessboard--wrapper">
-    <v-chessboard />
+    <VChessboard />
   </div>
 </template>
 
 <script setup lang="ts">
-import vChessboard from "@/components/chess/vChessboard.vue";
+import VChessboard from '~/components/chess/vChessboard.vue';
 </script>
 
 <style lang="scss" scoped>
@@ -23,5 +23,5 @@ import vChessboard from "@/components/chess/vChessboard.vue";
 </style>
 
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300&display=swap');
 </style>

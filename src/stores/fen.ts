@@ -1,9 +1,9 @@
-import { defineStore } from "pinia";
-import { useSquareStore } from "./square";
-import { usePieceStore } from "./piece";
-import { useTurnStore } from "./turn";
+import { defineStore } from 'pinia';
+import { useSquareStore } from './square';
+import { usePieceStore } from './piece';
+import { useTurnStore } from './turn';
 
-export const useFenStore = defineStore("fen", () => {
+export const useFenStore = defineStore('fen', () => {
   // stores
   const squareStore = useSquareStore();
   const { addPiece } = usePieceStore();
@@ -13,11 +13,9 @@ export const useFenStore = defineStore("fen", () => {
   // fen parsing
 
   // const startingFen = "8/8/4pp2/4K3/8/8/8/8 w - - 0 1";
-  const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+  const startingFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 
-  const parseFenToBoardState = (
-    startingFenParam: string | null = null
-  ): vBoardState => {
+  const parseFenToBoardState = (startingFenParam: string | null = null): vBoardState => {
     const fen = startingFenParam ?? startingFen;
     let squareIndex = 1;
     const boardState: vBoardState = [];
@@ -25,14 +23,14 @@ export const useFenStore = defineStore("fen", () => {
     // reverse fuckery needed because FEN starts at rank 8 (?) but still counts LTR (??)
     // TODO use whole FEN, not just position
     fen
-      .split(" ")[0]
-      .split("/")
-      .map((e) => e.split("").reverse().join(""))
-      .join("/")
-      .split("")
+      .split(' ')[0]
+      .split('/')
+      .map((e) => e.split('').reverse().join(''))
+      .join('/')
+      .split('')
       .reverse()
       .forEach((value) => {
-        if (value === "/") {
+        if (value === '/') {
           return;
         }
 
@@ -61,7 +59,7 @@ export const useFenStore = defineStore("fen", () => {
         }
       });
 
-    if (fen.split(" ")[1] === "b") {
+    if (fen.split(' ')[1] === 'b') {
       setNextPlayerTurn();
     }
 

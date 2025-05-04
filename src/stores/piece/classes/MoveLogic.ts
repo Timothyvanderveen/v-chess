@@ -1,11 +1,11 @@
-import { useBoardStore } from "@/stores/board";
-import { usePieceStore } from "..";
-import { storeToRefs } from "pinia";
-import { useSquareStore } from "@/stores/square";
+import { useBoardStore } from '~/stores/board';
+import { usePieceStore } from '..';
+import { storeToRefs } from 'pinia';
+import { useSquareStore } from '~/stores/square';
 
 export default class MoveLogic {
   pieceId: number;
-  playerColour: "white" | "black";
+  playerColour: 'white' | 'black';
   pieceType;
   squareIndex;
 
@@ -51,10 +51,9 @@ export default class MoveLogic {
   isPieceType = (typeToCheck: vPieceType) =>
     this.pieceStore.isPieceType(this.pieceType, typeToCheck);
 
-  isWhite = () => this.playerColour === "white";
+  isWhite = () => this.playerColour === 'white';
 
-  getPieceFromCollection = () =>
-    this.pieceStoreRefs.pieceCollection.value[this.pieceId];
+  getPieceFromCollection = () => this.pieceStoreRefs.pieceCollection.value[this.pieceId];
 
   getMoveArray = () => this.getPieceFromCollection().moves ?? [];
   getTakeArray = () => this.getPieceFromCollection().takes ?? [];
@@ -72,78 +71,73 @@ export default class MoveLogic {
         availableSteps: ({ file: _file, rank }: RankFileObject) => 8 - rank,
         upDownCounter: () => 1,
         leftRightCounter: () => 0,
-        line: "file",
+        line: 'file',
       },
       down: {
         availableSteps: ({ file: _file, rank }: RankFileObject) => rank - 1,
         upDownCounter: () => -1,
         leftRightCounter: () => 0,
-        line: "file",
+        line: 'file',
       },
       right: {
         availableSteps: ({ file, rank: _rank }: RankFileObject) => 8 - file,
         upDownCounter: () => 0,
         leftRightCounter: () => 1,
-        line: "rank",
+        line: 'rank',
       },
       left: {
         availableSteps: ({ file, rank: _rank }: RankFileObject) => file - 1,
         upDownCounter: () => 0,
         leftRightCounter: () => -1,
-        line: "rank",
+        line: 'rank',
       },
     },
 
     diagonal: {
       topleft: {
-        availableSteps: ({ file, rank }: RankFileObject) =>
-          Math.min(8 - rank, file - 1),
+        availableSteps: ({ file, rank }: RankFileObject) => Math.min(8 - rank, file - 1),
         upDownCounter: () => 1,
         leftRightCounter: () => -1,
-        line: "a8-h1",
+        line: 'a8-h1',
       },
       topright: {
-        availableSteps: ({ file, rank }: RankFileObject) =>
-          Math.min(8 - file, 8 - rank),
+        availableSteps: ({ file, rank }: RankFileObject) => Math.min(8 - file, 8 - rank),
         upDownCounter: () => 1,
         leftRightCounter: () => 1,
-        line: "a1-h8",
+        line: 'a1-h8',
       },
       bottomright: {
-        availableSteps: ({ file, rank }: RankFileObject) =>
-          Math.min(rank - 1, 8 - file),
+        availableSteps: ({ file, rank }: RankFileObject) => Math.min(rank - 1, 8 - file),
         upDownCounter: () => -1,
         leftRightCounter: () => 1,
-        line: "a8-h1",
+        line: 'a8-h1',
       },
       bottomleft: {
-        availableSteps: ({ file: file, rank }: RankFileObject) =>
-          Math.min(file - 1, rank - 1),
+        availableSteps: ({ file: file, rank }: RankFileObject) => Math.min(file - 1, rank - 1),
         upDownCounter: () => -1,
         leftRightCounter: () => -1,
-        line: "a1-h8",
+        line: 'a1-h8',
       },
     },
 
     pawn: {
       moveupdown: {
-        availableSteps: ({ rank, file: _file }) =>
-          rank === 2 || rank === 7 ? 2 : 1,
+        availableSteps: ({ rank, file: _file }) => (rank === 2 || rank === 7 ? 2 : 1),
         upDownCounter: () => (this.isWhite() ? 1 : -1),
         leftRightCounter: () => 0,
-        line: "file",
+        line: 'file',
       },
       takeleft: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => (this.isWhite() ? 1 : -1),
         leftRightCounter: () => -1,
-        line: this.isWhite() ? "a8-h1" : "a1-h8",
+        line: this.isWhite() ? 'a8-h1' : 'a1-h8',
       },
       takeright: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => (this.isWhite() ? 1 : -1),
         leftRightCounter: () => 1,
-        line: this.isWhite() ? "a1-h8" : "a8-h1",
+        line: this.isWhite() ? 'a1-h8' : 'a8-h1',
       },
     },
 
@@ -152,49 +146,49 @@ export default class MoveLogic {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => 2,
         leftRightCounter: () => 1,
-        line: "upright",
+        line: 'upright',
       },
       rightup: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => 1,
         leftRightCounter: () => 2,
-        line: "rightup",
+        line: 'rightup',
       },
       rightdown: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => -1,
         leftRightCounter: () => 2,
-        line: "rightdown",
+        line: 'rightdown',
       },
       downright: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => -2,
         leftRightCounter: () => 1,
-        line: "downright",
+        line: 'downright',
       },
       downleft: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => -2,
         leftRightCounter: () => -1,
-        line: "downleft",
+        line: 'downleft',
       },
       leftdown: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => -1,
         leftRightCounter: () => -2,
-        line: "leftdown",
+        line: 'leftdown',
       },
       leftup: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => 1,
         leftRightCounter: () => -2,
-        line: "leftup",
+        line: 'leftup',
       },
       upleft: {
         availableSteps: (_fileRankObject) => 1,
         upDownCounter: () => 2,
         leftRightCounter: () => -1,
-        line: "upleft",
+        line: 'upleft',
       },
     },
   };
@@ -207,26 +201,26 @@ export default class MoveLogic {
     let steps: number | null = null;
 
     switch (this.pieceType.toLowerCase()) {
-      case "p":
-        instructionKeys.push("pawn");
+      case 'p':
+        instructionKeys.push('pawn');
         break;
-      case "r":
-        instructionKeys.push("cardinal");
+      case 'r':
+        instructionKeys.push('cardinal');
         break;
-      case "k":
-        instructionKeys.push("diagonal");
-        instructionKeys.push("cardinal");
+      case 'k':
+        instructionKeys.push('diagonal');
+        instructionKeys.push('cardinal');
         steps = 1;
         break;
-      case "q":
-        instructionKeys.push("diagonal");
-        instructionKeys.push("cardinal");
+      case 'q':
+        instructionKeys.push('diagonal');
+        instructionKeys.push('cardinal');
         break;
-      case "b":
-        instructionKeys.push("diagonal");
+      case 'b':
+        instructionKeys.push('diagonal');
         break;
-      case "n":
-        instructionKeys.push("knight");
+      case 'n':
+        instructionKeys.push('knight');
         break;
     }
 
@@ -240,12 +234,10 @@ export default class MoveLogic {
     }
   };
 
-  getWithPreventCheckKeys = (
-    instructionKeyArray: Array<keyof typeof this.instructions>
-  ) => {
+  getWithPreventCheckKeys = (instructionKeyArray: Array<keyof typeof this.instructions>) => {
     const allInstructionKeys = [...instructionKeyArray];
 
-    ["diagonal", "cardinal"].forEach((e) => {
+    ['diagonal', 'cardinal'].forEach((e) => {
       if (!allInstructionKeys.includes(e)) {
         allInstructionKeys.push(e);
       }
@@ -267,78 +259,72 @@ export default class MoveLogic {
     this.setTakeArray([]);
     this.moveTakeCollection = [];
     this.encounteredPieceLines = { king: null, attacker: null };
-    this.pieceStoreRefs.pieceCollection.value[this.pieceId].encounteredPieces =
-      { own: [], opponent: [] };
+    this.pieceStoreRefs.pieceCollection.value[this.pieceId].encounteredPieces = {
+      own: [],
+      opponent: [],
+    };
   };
 
   calculateMovesAndTakes = (
     instructionKeyArray: Array<keyof typeof this.instructions>,
-    steps: number | null
+    steps: number | null,
   ) => {
     const oldRankFile = this.squareStore.getRankFileObject(this.squareIndex);
 
     this.resetForNewCalculation();
 
-    this.getWithPreventCheckKeys(instructionKeyArray).forEach(
-      (instructionKey) => {
-        const preventCheckOnly = !instructionKeyArray.includes(instructionKey);
-        const currentInstruction = this.instructions[instructionKey];
+    this.getWithPreventCheckKeys(instructionKeyArray).forEach((instructionKey) => {
+      const preventCheckOnly = !instructionKeyArray.includes(instructionKey);
+      const currentInstruction = this.instructions[instructionKey];
 
-        Object.keys(currentInstruction).forEach((direction) => {
-          const line = currentInstruction[direction]?.line;
+      Object.keys(currentInstruction).forEach((direction) => {
+        const line = currentInstruction[direction]?.line;
 
-          const availableSteps =
-            currentInstruction[direction].availableSteps(oldRankFile);
+        const availableSteps = currentInstruction[direction].availableSteps(oldRankFile);
 
-          let upDownCounter = 0;
-          let leftRightCounter = 0;
+        let upDownCounter = 0;
+        let leftRightCounter = 0;
 
-          for (let counter = 0; counter < availableSteps; counter++) {
-            const instructionStepReached =
-              steps &&
-              counter === steps &&
-              instructionKeyArray.includes(instructionKey);
+        for (let counter = 0; counter < availableSteps; counter++) {
+          const instructionStepReached =
+            steps && counter === steps && instructionKeyArray.includes(instructionKey);
 
-            if (instructionStepReached) {
-              return true;
-            }
-
-            upDownCounter += currentInstruction[direction].upDownCounter();
-            leftRightCounter +=
-              currentInstruction[direction].leftRightCounter();
-
-            const newRankFile = {
-              rank: oldRankFile.rank + upDownCounter,
-              file: oldRankFile.file + leftRightCounter,
-            };
-
-            if (this.boardStore.rankFileExceedsBoardBounds(newRankFile)) {
-              return;
-            }
-
-            const newSquareIndex = this.squareStore.getSquareIndexByCoordinates(
-              {
-                file: newRankFile.file as vSquareFileNumber,
-                rank: newRankFile.rank as vSquareRankNumber,
-              }
-            );
-
-            const handledFoundPiece = this.handleFoundPiece(
-              newSquareIndex,
-              line,
-              instructionKey,
-              preventCheckOnly
-            );
-
-            if (handledFoundPiece) {
-              return true;
-            } else {
-              this.handleMove(newSquareIndex, line, preventCheckOnly);
-            }
+          if (instructionStepReached) {
+            return true;
           }
-        });
-      }
-    );
+
+          upDownCounter += currentInstruction[direction].upDownCounter();
+          leftRightCounter += currentInstruction[direction].leftRightCounter();
+
+          const newRankFile = {
+            rank: oldRankFile.rank + upDownCounter,
+            file: oldRankFile.file + leftRightCounter,
+          };
+
+          if (this.boardStore.rankFileExceedsBoardBounds(newRankFile)) {
+            return;
+          }
+
+          const newSquareIndex = this.squareStore.getSquareIndexByCoordinates({
+            file: newRankFile.file as vSquareFileNumber,
+            rank: newRankFile.rank as vSquareRankNumber,
+          });
+
+          const handledFoundPiece = this.handleFoundPiece(
+            newSquareIndex,
+            line,
+            instructionKey,
+            preventCheckOnly,
+          );
+
+          if (handledFoundPiece) {
+            return true;
+          } else {
+            this.handleMove(newSquareIndex, line, preventCheckOnly);
+          }
+        }
+      });
+    });
 
     this.validateMoveAndTakes();
   };
@@ -347,36 +333,28 @@ export default class MoveLogic {
     newSquareIndex: number,
     currentLine: string,
     currentInstructionKey: keyof typeof this.instructions,
-    preventCheckOnly: boolean
+    preventCheckOnly: boolean,
   ) => {
     const foundPiece = this.pieceStore.getPieceOnSquare(newSquareIndex);
 
     if (foundPiece) {
-      const foundPieceIsKing = foundPiece.type.toLowerCase() === "k";
-      const isNotPawnOrTakingOnFileLine =
-        !this.isPieceType("p") || currentLine !== "file";
+      const foundPieceIsKing = foundPiece.type.toLowerCase() === 'k';
+      const isNotPawnOrTakingOnFileLine = !this.isPieceType('p') || currentLine !== 'file';
 
-      const hasOpponentPiece = this.squareStore.hasOpponentPiece(
-        newSquareIndex,
-        this.playerColour
-      );
+      const hasOpponentPiece = this.squareStore.hasOpponentPiece(newSquareIndex, this.playerColour);
 
       if (hasOpponentPiece) {
-        this.encounterPiece("opponent", newSquareIndex, preventCheckOnly);
+        this.encounterPiece('opponent', newSquareIndex, preventCheckOnly);
 
         if (!preventCheckOnly && isNotPawnOrTakingOnFileLine) {
           this.moveTakeCollection.push({
             line: currentLine,
             squareIndex: newSquareIndex,
-            action: "take",
+            action: 'take',
           });
         }
 
-        this.checkForChecks(
-          currentInstructionKey,
-          foundPiece.type,
-          currentLine
-        );
+        this.checkForChecks(currentInstructionKey, foundPiece.type, currentLine);
 
         return true;
       }
@@ -385,18 +363,18 @@ export default class MoveLogic {
         this.encounteredPieceLines.king = currentLine;
       }
 
-      this.encounterPiece("own", newSquareIndex, preventCheckOnly);
+      this.encounterPiece('own', newSquareIndex, preventCheckOnly);
 
       return true;
     } else if (
-      this.isPieceType("p") &&
-      currentInstructionKey === "pawn" &&
-      (currentLine === "a1-h8" || currentLine === "a8-h1")
+      this.isPieceType('p') &&
+      currentInstructionKey === 'pawn' &&
+      (currentLine === 'a1-h8' || currentLine === 'a8-h1')
     ) {
       this.moveTakeCollection.push({
         line: currentLine,
         squareIndex: newSquareIndex,
-        action: "take",
+        action: 'take',
       });
 
       return true;
@@ -405,52 +383,41 @@ export default class MoveLogic {
     return false;
   };
 
-  encounterPiece = (
-    type: "own" | "opponent",
-    squareIndex: number,
-    preventCheckOnly: boolean
-  ) => {
+  encounterPiece = (type: 'own' | 'opponent', squareIndex: number, preventCheckOnly: boolean) => {
     if (!preventCheckOnly) {
-      this.pieceStoreRefs.pieceCollection.value[this.pieceId].encounteredPieces[
-        type
-      ].push(squareIndex);
+      this.pieceStoreRefs.pieceCollection.value[this.pieceId].encounteredPieces[type].push(
+        squareIndex,
+      );
     }
   };
 
   checkForChecks = (
     currentInstructionKey: keyof typeof this.instructions,
     foundPieceType: vPieceType,
-    currentLine: string
+    currentLine: string,
   ) => {
     const lineToPieceMapping = {
-      cardinal: ["r", "q"],
-      diagonal: ["b", "q"],
+      cardinal: ['r', 'q'],
+      diagonal: ['b', 'q'],
     };
 
-    if (
-      Object.keys(lineToPieceMapping).includes(currentInstructionKey.toString())
-    ) {
-      const pieceTypes =
-        lineToPieceMapping[currentInstructionKey as "cardinal" | "diagonal"];
+    if (Object.keys(lineToPieceMapping).includes(currentInstructionKey.toString())) {
+      const pieceTypes = lineToPieceMapping[currentInstructionKey as 'cardinal' | 'diagonal'];
       if (pieceTypes && pieceTypes.includes(foundPieceType.toLowerCase())) {
         this.encounteredPieceLines.attacker = currentLine;
       }
     }
   };
 
-  handleMove = (
-    newSquareIndex: number,
-    currentLine: string,
-    preventCheckOnly: boolean
-  ) => {
+  handleMove = (newSquareIndex: number, currentLine: string, preventCheckOnly: boolean) => {
     if (
       !preventCheckOnly &&
-      (!this.isPieceType("p") || !["a1-h8", "a8-h1"].includes(currentLine))
+      (!this.isPieceType('p') || !['a1-h8', 'a8-h1'].includes(currentLine))
     ) {
       this.moveTakeCollection.push({
         line: currentLine,
         squareIndex: newSquareIndex,
-        action: "move",
+        action: 'move',
       });
     }
   };
@@ -461,17 +428,11 @@ export default class MoveLogic {
       .filter(([_key, value]) => value.owner !== this.playerColour)
       .some(([_key, value]) => {
         const crossingMoveableSquare =
-          value.moves.includes(squareIndex) &&
-          !this.pieceStore.isPieceType(value.type, "p");
+          value.moves.includes(squareIndex) && !this.pieceStore.isPieceType(value.type, 'p');
         const crossingTakeableSquare = value.takes.includes(squareIndex);
-        const takingOpponentSquare =
-          value.encounteredPieces.own.includes(squareIndex);
+        const takingOpponentSquare = value.encounteredPieces.own.includes(squareIndex);
 
-        return (
-          crossingMoveableSquare ||
-          crossingTakeableSquare ||
-          takingOpponentSquare
-        );
+        return crossingMoveableSquare || crossingTakeableSquare || takingOpponentSquare;
       });
   };
 
@@ -481,32 +442,18 @@ export default class MoveLogic {
       this.encounteredPieceLines.attacker !== this.encounteredPieceLines.king;
 
     this.moveTakeCollection.forEach((moveTakeObject) => {
-      const attackerOnLineIsTakeable =
-        this.encounteredPieceLines.attacker === moveTakeObject.line;
+      const attackerOnLineIsTakeable = this.encounteredPieceLines.attacker === moveTakeObject.line;
 
-      if (
-        this.isPieceType("k") &&
-        this.crossingDangerousSquare(moveTakeObject.squareIndex)
-      ) {
+      if (this.isPieceType('k') && this.crossingDangerousSquare(moveTakeObject.squareIndex)) {
         return;
       }
 
-      if (
-        hasNotEncounteredKing ||
-        attackerLineIsNotKingLine ||
-        attackerOnLineIsTakeable
-      ) {
-        if (moveTakeObject.action === "move") {
-          this.setMoveArray([
-            ...this.getMoveArray(),
-            moveTakeObject.squareIndex,
-          ]);
+      if (hasNotEncounteredKing || attackerLineIsNotKingLine || attackerOnLineIsTakeable) {
+        if (moveTakeObject.action === 'move') {
+          this.setMoveArray([...this.getMoveArray(), moveTakeObject.squareIndex]);
         }
-        if (moveTakeObject.action === "take") {
-          this.setTakeArray([
-            ...this.getTakeArray(),
-            moveTakeObject.squareIndex,
-          ]);
+        if (moveTakeObject.action === 'take') {
+          this.setTakeArray([...this.getTakeArray(), moveTakeObject.squareIndex]);
         }
       }
     });

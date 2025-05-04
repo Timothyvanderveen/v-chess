@@ -37,34 +37,25 @@
 </template>
 
 <script setup lang="ts">
-import vSquare from "./vSquare.vue";
-import vChessPiece from "./vChessPiece.vue";
-import { useSquareStore } from "@/stores/square";
-import { useBoardStore } from "@/stores/board";
-import { onMounted, ref, type Ref } from "vue";
-import { usePieceStore } from "@/stores/piece/index";
-import { storeToRefs } from "pinia";
-import { useTurnStore } from "@/stores/turn";
+import { storeToRefs } from 'pinia';
+import { onMounted, ref, type Ref } from 'vue';
+import VChessPiece from '~/components/chess/vChessPiece.vue';
+import VSquare from '~/components/chess/vSquare.vue';
+import { useBoardStore } from '~/stores/board';
+import { usePieceStore } from '~/stores/piece';
+import { useSquareStore } from '~/stores/square';
 
 // stores
-const {
-  getColour,
-  getRankBySquareIndex,
-  getFileBySquareIndex,
-  hasOpponentPiece,
-} = useSquareStore();
+const { getColour, getRankBySquareIndex, getFileBySquareIndex, hasOpponentPiece } =
+  useSquareStore();
 
-const { populateBoardState, squareArray, rankArray, fileLetterArray } =
-  useBoardStore();
+const { populateBoardState, squareArray, rankArray, fileLetterArray } = useBoardStore();
 const { availableMoveArray, availableTakeArray } = storeToRefs(useBoardStore());
 
 // const { currentPlayerTurn } = storeToRefs(useTurnStore());
 
-const { movePiece, startCantMoveAnimation, getOwner, unselectPiece } =
-  usePieceStore();
-const { pieceCollection, activePiece, activePieceId } = storeToRefs(
-  usePieceStore()
-);
+const { movePiece, startCantMoveAnimation, getOwner, unselectPiece } = usePieceStore();
+const { pieceCollection, activePiece, activePieceId } = storeToRefs(usePieceStore());
 
 // html
 
@@ -80,13 +71,10 @@ onMounted(() => {
 
 // TODO move logic
 onMounted(() => {
-  chessboard.value?.addEventListener("mousedown", (e) => {
-    const element = document.elementFromPoint(
-      e.clientX,
-      e.clientY
-    ) as HTMLElement;
+  chessboard.value?.addEventListener('mousedown', (e) => {
+    const element = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
 
-    if (element?.classList.contains("v-piece")) {
+    if (element?.classList.contains('v-piece')) {
       e.preventDefault();
 
       const clickedPieceObject = {
@@ -94,16 +82,13 @@ onMounted(() => {
         type: element.dataset.pieceType as vPieceType,
         owner: getOwner(element.dataset.pieceType as vPieceType),
         id: parseInt(element.dataset.id as string),
-        squareIndex: parseInt(
-          element.parentElement?.dataset.squareIndex as string
-        ),
+        squareIndex: parseInt(element.parentElement?.dataset.squareIndex as string),
       };
 
       const noPieceSelected = !activePiece.value;
       const isCurrentPlayerPiece = true; // DEBUG check for player turn
       // clickedPieceObject.owner === currentPlayerTurn.value;
-      const selectedOwnPiece =
-        clickedPieceObject.owner === activePiece.value?.owner;
+      const selectedOwnPiece = clickedPieceObject.owner === activePiece.value?.owner;
 
       if ((noPieceSelected && isCurrentPlayerPiece) || selectedOwnPiece) {
         activePieceId.value = clickedPieceObject.id;
@@ -112,16 +97,10 @@ onMounted(() => {
 
       if (activePiece.value) {
         if (
-          hasOpponentPiece(
-            clickedPieceObject.squareIndex,
-            activePiece.value.owner
-          ) &&
+          hasOpponentPiece(clickedPieceObject.squareIndex, activePiece.value.owner) &&
           availableTakeArray.value.includes(clickedPieceObject.squareIndex)
         ) {
-          movePiece(
-            clickedPieceObject.squareIndex,
-            activePiece.value.squareIndex
-          );
+          movePiece(clickedPieceObject.squareIndex, activePiece.value.squareIndex);
         } else {
           startCantMoveAnimation(activePiece.value.squareIndex);
           return;
@@ -129,7 +108,7 @@ onMounted(() => {
       }
     }
 
-    if (element?.classList.contains("v-square")) {
+    if (element?.classList.contains('v-square')) {
       e.preventDefault();
 
       const squareIndex = parseInt(element?.dataset.squareIndex as string);
@@ -192,6 +171,7 @@ onMounted(() => {
       width: 12.5%;
     }
   }
+
   .v-chessboard__coordinates--ranks {
     left: -4vmin;
     bottom: 0;

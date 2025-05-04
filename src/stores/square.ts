@@ -1,8 +1,8 @@
-import { defineStore, storeToRefs } from "pinia";
-import { useBoardStore } from "./board";
-import { usePieceStore } from "./piece";
+import { defineStore, storeToRefs } from 'pinia';
+import { useBoardStore } from './board';
+import { usePieceStore } from './piece';
 
-export const useSquareStore = defineStore("square", () => {
+export const useSquareStore = defineStore('square', () => {
   // stores
 
   const boardStore = useBoardStore();
@@ -16,11 +16,10 @@ export const useSquareStore = defineStore("square", () => {
     const { file, rank } = getRankFileObject(squareIndex);
 
     if ((file + rank) % 2 === 0) {
-      return "black";
+      return 'black';
     } else {
-      return "white";
+      return 'white';
     }
-    throw Error("invalid colour");
   };
 
   const getFileBySquareIndex = (squareIndex: number): vSquareFileNumber => {
@@ -30,14 +29,13 @@ export const useSquareStore = defineStore("square", () => {
   };
 
   const getRankBySquareIndex = (squareIndex: number): vSquareRankNumber => {
-    const rank: number | null =
-      boardStore.fileArray[Math.ceil(squareIndex / 8) - 1] ?? null;
+    const rank: number | null = boardStore.fileArray[Math.ceil(squareIndex / 8) - 1] ?? null;
     if (rank === null) throw Error(`invalid rank: ${squareIndex}`);
     return rank as vSquareRankNumber;
   };
 
   const getRankFileObject = (
-    squareIndex: number
+    squareIndex: number,
   ): { file: vSquareFileNumber; rank: vSquareRankNumber } => {
     return {
       rank: getRankBySquareIndex(squareIndex),
@@ -74,7 +72,7 @@ export const useSquareStore = defineStore("square", () => {
 
     getPieceCollectionEntries().some((entries) => {
       const isOpponent =
-        owner === "white"
+        owner === 'white'
           ? entries[1].type === entries[1].type.toLowerCase()
           : entries[1].type === entries[1].type.toUpperCase();
 
@@ -92,9 +90,7 @@ export const useSquareStore = defineStore("square", () => {
       return squareIndex;
     }
 
-    return parseInt(
-      `${getRankBySquareIndex(squareIndex)}${getFileBySquareIndex(squareIndex)}`
-    );
+    return parseInt(`${getRankBySquareIndex(squareIndex)}${getFileBySquareIndex(squareIndex)}`);
   };
 
   const squareIsMoveable = (squareIndex: number) => {

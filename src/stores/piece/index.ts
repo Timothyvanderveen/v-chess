@@ -1,10 +1,10 @@
-import { defineStore } from "pinia";
-import { useBoardStore } from "../board";
-import { computed, reactive, ref, type Ref } from "vue";
-import { useTurnStore } from "../turn";
-import MoveLogic from "./classes/MoveLogic";
+import { defineStore } from 'pinia';
+import { useBoardStore } from '../board';
+import { computed, reactive, ref, type Ref } from 'vue';
+import { useTurnStore } from '../turn';
+import MoveLogic from './classes/MoveLogic';
 
-export const usePieceStore = defineStore("piece", () => {
+export const usePieceStore = defineStore('piece', () => {
   // stores
 
   // const { availableMoveArray, availableTakeArray } = storeToRefs(
@@ -17,10 +17,10 @@ export const usePieceStore = defineStore("piece", () => {
 
   const getOwner = (pieceType: vPieceType) => {
     if (pieceType.toUpperCase() === pieceType) {
-      return "white";
+      return 'white';
     }
     if (pieceType.toLowerCase() === pieceType) {
-      return "black";
+      return 'black';
     }
     throw new Error(`invalid piece type: ${pieceType}`);
   };
@@ -35,16 +35,14 @@ export const usePieceStore = defineStore("piece", () => {
   const isPieceType = (currentPieceType: vPieceType, typeToCheck: vPieceType) =>
     currentPieceType.toLowerCase() === typeToCheck.toLowerCase();
 
-  const isKing = (pieceType: vPieceType) => pieceType.toLowerCase() === "k";
+  const isKing = (pieceType: vPieceType) => pieceType.toLowerCase() === 'k';
 
   // piece collection
 
   const pieceCollection: vPieceCollection = reactive({});
 
   const getPieceCollectionEntries = () => {
-    return Object.entries(pieceCollection) as [
-      key: [key: string, value: vPieceObject]
-    ];
+    return Object.entries(pieceCollection) as [key: [key: string, value: vPieceObject]];
   };
 
   const getPieceOnSquare = (squareIndex: number) => {
@@ -76,13 +74,7 @@ export const usePieceStore = defineStore("piece", () => {
     activePieceId.value = null;
   };
 
-  const addPiece = ({
-    squareIndex,
-    pieceType,
-  }: {
-    squareIndex: number;
-    pieceType: vPieceType;
-  }) => {
+  const addPiece = ({ squareIndex, pieceType }: { squareIndex: number; pieceType: vPieceType }) => {
     const newID = createID();
     pieceCollection[newID] = {
       owner: getOwner(pieceType),
@@ -124,46 +116,36 @@ export const usePieceStore = defineStore("piece", () => {
     unselectPiece();
 
     getPieceCollectionEntries().forEach(([_key, value]) => {
-      const movesAffected =
-        value.moves.includes(from) || value.moves.includes(to);
-      const takesAffected =
-        value.takes.includes(from) || value.takes.includes(to);
+      const movesAffected = value.moves.includes(from) || value.moves.includes(to);
+      const takesAffected = value.takes.includes(from) || value.takes.includes(to);
       const ownPiecesAffected =
-        value.encounteredPieces.own.includes(to) ||
-        value.encounteredPieces.own.includes(from);
+        value.encounteredPieces.own.includes(to) || value.encounteredPieces.own.includes(from);
       const opponentPiecesAffected =
         value.encounteredPieces.opponent.includes(to) ||
         value.encounteredPieces.opponent.includes(from);
 
-      if (
-        movesAffected ||
-        takesAffected ||
-        ownPiecesAffected ||
-        opponentPiecesAffected
-      ) {
+      if (movesAffected || takesAffected || ownPiecesAffected || opponentPiecesAffected) {
         createMoveLogic(value.id).setAvailableMoves();
       }
     });
   };
 
   const getPieceElement = (squareIndex: number): HTMLElement | null => {
-    return document.querySelector(
-      `.v-piece__wrapper[data-square-index="${squareIndex}"] .v-piece`
-    );
+    return document.querySelector(`.v-piece__wrapper[data-square-index="${squareIndex}"] .v-piece`);
   };
 
   const startCantMoveAnimation = (squareIndex: number) => {
     getPieceElement(squareIndex)?.animate(
       [
-        { transform: "rotate(0) scale(1)" },
-        { transform: "rotate(15deg) scale(1.1)" },
-        { transform: "rotate(-15deg) scale(1.1)" },
-        { transform: "rotate(15deg) scale(1.1)" },
-        { transform: "rotate(0) scale(1)" },
+        { transform: 'rotate(0) scale(1)' },
+        { transform: 'rotate(15deg) scale(1.1)' },
+        { transform: 'rotate(-15deg) scale(1.1)' },
+        { transform: 'rotate(15deg) scale(1.1)' },
+        { transform: 'rotate(0) scale(1)' },
       ],
       {
         duration: 500,
-      }
+      },
     );
   };
 
@@ -183,9 +165,9 @@ export const usePieceStore = defineStore("piece", () => {
     const pieceElement = getPieceElement(squareIndex);
     if (!pieceElement) return;
     const randomSideNumber = Math.floor(Math.random() * 2);
-    const xModifier = randomSideNumber === 0 ? "40%" : "-40%";
-    const degModifier = randomSideNumber === 0 ? "20deg" : "-20deg";
-    pieceElement.classList.add("deleting");
+    const xModifier = randomSideNumber === 0 ? '40%' : '-40%';
+    const degModifier = randomSideNumber === 0 ? '20deg' : '-20deg';
+    pieceElement.classList.add('deleting');
     pieceElement
       .animate(
         [
@@ -200,9 +182,9 @@ export const usePieceStore = defineStore("piece", () => {
         ],
         {
           duration: 300,
-        }
+        },
       )
-      .addEventListener("finish", () => {
+      .addEventListener('finish', () => {
         checkForDeletion(pieceElement);
       });
   };
@@ -213,15 +195,13 @@ export const usePieceStore = defineStore("piece", () => {
     }
     const id = parseInt(pieceElement.dataset.id);
 
-    pieceIdsToDelete.value = pieceIdsToDelete.value.filter(
-      (pieceIdToDelete) => {
-        if (pieceIdToDelete === id) {
-          delete pieceCollection[id];
-          return false;
-        }
-        return true;
+    pieceIdsToDelete.value = pieceIdsToDelete.value.filter((pieceIdToDelete) => {
+      if (pieceIdToDelete === id) {
+        delete pieceCollection[id];
+        return false;
       }
-    );
+      return true;
+    });
   };
 
   const affectedPiecesByMoveArray: Ref<number[]> = ref([]);
